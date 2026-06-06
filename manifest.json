@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "SearchBeauti",
+  "version": "1.0.0",
+  "description": "Beautify Baidu, Google, and Bing search results — layouts, favicons, dark mode, and more.",
+  "icons": {
+    "16": "public/icons/icon-16.png",
+    "48": "public/icons/icon-48.png",
+    "128": "public/icons/icon-128.png"
+  },
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_title": "SearchBeauti"
+  },
+  "content_scripts": [
+    {
+      "js": ["src/content/index.ts"],
+      "matches": [
+        "*://www.baidu.com/*",
+        "*://www.google.com/*",
+        "*://www.google.com.hk/*",
+        "*://encrypted.google.com/*",
+        "*://*.bing.com/*"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "background": {
+    "service_worker": "src/background.ts",
+    "type": "module"
+  },
+  "permissions": ["storage", "tabs"],
+  "host_permissions": [
+    "*://www.baidu.com/*",
+    "*://www.google.com/*",
+    "*://www.google.com.hk/*",
+    "*://*.bing.com/*"
+  ]
+}
