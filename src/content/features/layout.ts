@@ -65,24 +65,26 @@ const BING_SINGLE_CSS = `
 #b_results > li.b_algo,
 #b_results > li.b_ans,
 #b_results > li.b_ad {
-  background: #fff !important;
-  border-radius: 12px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
-  border: 1px solid #e8eaed !important;
-  padding: 16px 20px !important;
-  margin-bottom: 10px !important;
-  transition: box-shadow 0.15s, border-color 0.15s !important;
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -4px rgba(0, 0, 0, 0.03) !important;
+  border: 1px solid rgba(0, 0, 0, 0.04) !important;
+  padding: 20px 24px !important;
+  margin-bottom: 16px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important;
 }
 #b_results > li.b_algo:hover,
 #b_results > li.b_ans:hover {
-  box-shadow: 0 4px 16px rgba(92, 124, 250, 0.18) !important;
-  border-color: #bac8ff !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 20px 25px -5px rgba(92, 124, 250, 0.12), 0 8px 10px -6px rgba(92, 124, 250, 0.08) !important;
+  border-color: rgba(92, 124, 250, 0.25) !important;
 }
 #b_results > li.b_msg {
-  margin-bottom: 10px !important;
+  margin-bottom: 16px !important;
 }
 #b_results > li.b_algo h2 a:visited {
-  color: #681da8 !important;
+  color: #6b21a8 !important;
 }
 
 /* === Restore Bing's result text states that card styling can flatten === */
@@ -90,18 +92,23 @@ const BING_SINGLE_CSS = `
 #b_topw .b_title a,
 #b_results h2 a,
 #b_results .b_title a {
-  color: #0c8ef1 !important;
+  color: #2563eb !important;
 }
 #b_topw h2 a:visited,
 #b_topw .b_title a:visited,
 #b_results h2 a:visited,
 #b_results .b_title a:visited {
-  color: #7a1ccc !important;
+  color: #6b21a8 !important;
 }
 #b_content strong,
 #b_content b,
 #b_content em {
-  color: #c5221f !important;
+  background: rgba(245, 158, 11, 0.08) !important;
+  color: #d97706 !important;
+  padding: 1px 4px !important;
+  border-radius: 4px !important;
+  font-style: normal !important;
+  font-weight: 600 !important;
 }
 
 /* === Keep URL and translate action horizontal after narrowing result cards === */
@@ -247,32 +254,38 @@ form.tsf {
 
 /* === Card styling for Google results === */
 #rso .MjjYud:has(a) {
-  background: #fff !important;
-  border-radius: 12px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
-  border: 1px solid #e8eaed !important;
-  padding: 16px 20px !important;
-  margin-bottom: 12px !important;
-  transition: box-shadow 0.15s, border-color 0.15s !important;
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -4px rgba(0, 0, 0, 0.03) !important;
+  border: 1px solid rgba(0, 0, 0, 0.04) !important;
+  padding: 20px 24px !important;
+  margin-bottom: 16px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
   box-sizing: border-box !important;
   width: 100% !important;
 }
 #rso .MjjYud:has(a):hover {
-  box-shadow: 0 4px 16px rgba(92, 124, 250, 0.18) !important;
-  border-color: #bac8ff !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 20px 25px -5px rgba(92, 124, 250, 0.12), 0 8px 10px -6px rgba(92, 124, 250, 0.08) !important;
+  border-color: rgba(92, 124, 250, 0.25) !important;
 }
 
 /* === Restore Google result text states (Blue titles, Purple visited, Red keywords) === */
 #center_col h3,
 #center_col h3 * {
-  color: #0c8ef1 !important;
+  color: #2563eb !important;
 }
 #center_col a:visited h3,
 #center_col a:visited h3 * {
-  color: #7a1ccc !important;
+  color: #6b21a8 !important;
 }
 #center_col em {
-  color: #c5221f !important;
+  background: rgba(245, 158, 11, 0.08) !important;
+  color: #d97706 !important;
+  padding: 1px 4px !important;
+  border-radius: 4px !important;
+  font-style: normal !important;
+  font-weight: 600 !important;
 }
 `
 
@@ -373,33 +386,39 @@ const BAIDU_SINGLE_CSS = `
 /* === Card styling for Baidu results === */
 #content_left .result,
 #content_left .c-container {
-  background: #fff !important;
-  border-radius: 12px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
-  border: 1px solid #e8eaed !important;
-  padding: 16px 20px !important;
-  margin-bottom: 12px !important;
-  transition: box-shadow 0.15s, border-color 0.15s !important;
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -4px rgba(0, 0, 0, 0.03) !important;
+  border: 1px solid rgba(0, 0, 0, 0.04) !important;
+  padding: 20px 24px !important;
+  margin-bottom: 16px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
   box-sizing: border-box !important;
   width: 100% !important;
 }
 #content_left .result:hover,
 #content_left .c-container:hover {
-  box-shadow: 0 4px 16px rgba(92, 124, 250, 0.18) !important;
-  border-color: #bac8ff !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 20px 25px -5px rgba(92, 124, 250, 0.12), 0 8px 10px -6px rgba(92, 124, 250, 0.08) !important;
+  border-color: rgba(92, 124, 250, 0.25) !important;
 }
 
 /* === Restore Baidu result text states (Blue titles, Purple visited, Red keywords) === */
 #content_left h3 a,
 #content_left h3 a * {
-  color: #0c8ef1 !important;
+  color: #2563eb !important;
 }
 #content_left h3 a:visited,
 #content_left h3 a:visited * {
-  color: #7a1ccc !important;
+  color: #6b21a8 !important;
 }
 #content_left em {
-  color: #c5221f !important;
+  background: rgba(245, 158, 11, 0.08) !important;
+  color: #d97706 !important;
+  padding: 1px 4px !important;
+  border-radius: 4px !important;
+  font-style: normal !important;
+  font-weight: 600 !important;
 }
 `
 
