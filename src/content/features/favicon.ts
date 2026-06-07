@@ -59,6 +59,22 @@ function removeAll() {
   document.querySelectorAll(`.${FAVICON_CLASS}`).forEach((el) => el.remove())
 }
 
+let domWatcher: MutationObserver | null = null
+
+function startDomWatcher(config: AppConfig, adapter: EngineAdapter) {
+  if (domWatcher) domWatcher.disconnect()
+
+  domWatcher = new MutationObserver(() => {
+    const items = Array.from(document.querySelectorAll<HTMLElement>(adapter.selectors.resultItem))
+    processItems(items, adapter)
+  })
+
+  domWatcher.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+  })
+}
+
 export const faviconFeature: Feature = {
   name: 'favicon',
 
@@ -69,6 +85,8 @@ export const faviconFeature: Feature = {
 
     const items = Array.from(document.querySelectorAll<HTMLElement>(adapter.selectors.resultItem))
     processItems(items, adapter)
+
+    startDomWatcher(config, adapter)
   },
 
   processResults(results: HTMLElement[], adapter: EngineAdapter) {
@@ -79,18 +97,26 @@ export const faviconFeature: Feature = {
     if (!currentAdapter) return
     const ec = config.engines[currentAdapter.name]
     if (ec.favicon) {
-      // Re-apply favicons (existing ones are skipped by the duplicate check)
       const items = Array.from(
         document.querySelectorAll<HTMLElement>(currentAdapter.selectors.resultItem),
       )
       processItems(items, currentAdapter)
+      startDomWatcher(config, currentAdapter)
     } else {
+      if (domWatcher) {
+        domWatcher.disconnect()
+        domWatcher = null
+      }
       removeAll()
     }
   },
 
   destroy() {
     currentAdapter = null
+    if (domWatcher) {
+      domWatcher.disconnect()
+      domWatcher = null
+    }
     removeAll()
   },
 }

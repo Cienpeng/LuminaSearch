@@ -3,7 +3,7 @@ import type { EngineAdapter } from '../../shared/types'
 export const baiduAdapter: EngineAdapter = {
   name: 'baidu',
   match: (url: string) => /\.baidu\.com\//.test(url),
-  isSearchPage: (url: string) => /\.baidu\.com\/s\?/.test(url),
+  isSearchPage: (url: string) => /\.baidu\.com\/s($|\?|\/)/.test(url),
   selectors: {
     resultItem: '#content_left .result',
     resultLink: 'h3 a',

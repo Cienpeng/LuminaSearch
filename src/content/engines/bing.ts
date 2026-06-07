@@ -3,7 +3,7 @@ import type { EngineAdapter } from '../../shared/types'
 export const bingAdapter: EngineAdapter = {
   name: 'bing',
   match: (url: string) => /\.bing\.com\//.test(url),
-  isSearchPage: (url: string) => /\.bing\.com\/search\?/.test(url),
+  isSearchPage: (url: string) => /\.bing\.com\/search($|\?|\/)/.test(url),
   selectors: {
     resultItem: '#b_results > li.b_algo',
     resultLink: 'h2 > a',

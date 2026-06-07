@@ -10,6 +10,17 @@ import { paginationFeature, setOnResultsAdded } from './features/pagination'
 import { hideSidebarFeature } from './features/hide-sidebar'
 import { layoutFeature } from './features/layout'
 
+// Synchronously inject anti-flash styles at document_start to prevent FOOC
+const antiFlash = document.createElement('style')
+antiFlash.id = 'searchbeauti-anti-flash'
+antiFlash.textContent = 'html { opacity: 0 !important; }'
+document.documentElement.appendChild(antiFlash)
+
+// Safety fallback to restore visibility if initialization hangs
+setTimeout(() => {
+  document.getElementById('searchbeauti-anti-flash')?.remove()
+}, 500)
+
 const adapters: EngineAdapter[] = [bingAdapter, baiduAdapter, googleAdapter]
 const features: Feature[] = [
   darkModeFeature,
@@ -24,6 +35,10 @@ let activeFeatures: Feature[] = []
 let currentConfig: AppConfig | null = null
 let currentAdapter: EngineAdapter | null = null
 
+let lastProcessedUrl = ''
+let isInitializing = false
+let debounceTimer: number | null = null
+
 function matchAdapter(): EngineAdapter | null {
   return adapters.find((a) => a.match(location.href)) ?? null
 }
@@ -37,37 +52,165 @@ async function initFeatures(config: AppConfig, adapter: EngineAdapter) {
   if (!ec.enabled) return
 
   for (const feature of features) {
-    const res = feature.init?.(config, adapter)
-    if (res instanceof Promise) await res
-    activeFeatures.push(feature)
+    try {
+      const res = feature.init?.(config, adapter)
+      if (res instanceof Promise) await res
+      activeFeatures.push(feature)
+    } catch (err) {
+      console.error(`[SearchBeauti] Error initializing feature ${feature.name}:`, err)
+    }
   }
 }
 
 function destroyFeatures() {
   for (const f of activeFeatures) {
-    f.destroy?.()
+    try {
+      f.destroy?.()
+    } catch (err) {
+      console.error(`[SearchBeauti] Error destroying feature ${f.name}:`, err)
+    }
   }
   activeFeatures = []
 }
 
-async function main() {
-  const adapter = matchAdapter()
-  if (!adapter || !adapter.isSearchPage(location.href)) return
-
-  currentAdapter = adapter
-
-  // Wire pagination → favicon callback for dynamically loaded results
-  setOnResultsAdded((newItems: HTMLElement[]) => {
-    if (!currentConfig) return
-    if (getEngineConfig(currentConfig, adapter).favicon) {
-      faviconFeature.processResults?.(newItems, adapter)
+// Perform actual initialization for a specific URL
+async function performInit(url: string) {
+  try {
+    destroyFeatures()
+    
+    const adapter = matchAdapter()
+    if (!adapter || !adapter.isSearchPage(url)) {
+      currentAdapter = null
+      return
     }
-  })
 
-  const config = await loadConfig()
-  currentConfig = config
+    currentAdapter = adapter
 
-  await initFeatures(config, adapter)
+    // Wire pagination → favicon callback for dynamically loaded results
+    setOnResultsAdded((newItems: HTMLElement[]) => {
+      if (!currentConfig || !currentAdapter) return
+      if (getEngineConfig(currentConfig, currentAdapter).favicon) {
+        faviconFeature.processResults?.(newItems, currentAdapter)
+      }
+    })
+
+    // Load configuration fresh to ensure correct layout options are applied
+    currentConfig = await loadConfig()
+
+    await initFeatures(currentConfig, adapter)
+  } finally {
+    // Always remove anti-flash styles to restore page visibility
+    document.getElementById('searchbeauti-anti-flash')?.remove()
+  }
+}
+
+// Trigger page re-initialization if the URL state has changed
+async function triggerReinit() {
+  if (isInitializing) return
+  isInitializing = true
+  
+  try {
+    while (location.href !== lastProcessedUrl) {
+      const urlToProcess = location.href
+      console.log(`[SearchBeauti] Initializing layout for URL: ${urlToProcess}`)
+      await performInit(urlToProcess)
+      lastProcessedUrl = urlToProcess
+    }
+  } catch (err) {
+    console.error('[SearchBeauti] Error during initialization:', err)
+  } finally {
+    isInitializing = false
+  }
+}
+
+// Reset processed URL state to force a full re-initialization
+function forceReinit() {
+  lastProcessedUrl = ''
+  triggerReinit()
+}
+
+// Check if active style tags are still present in head
+function checkStyleTags() {
+  if (isInitializing || !currentAdapter || !currentConfig) return
+  
+  const ec = getEngineConfig(currentConfig, currentAdapter)
+  if (!ec.enabled) return
+
+  let styleMissing = false
+
+  // Check layout stylesheet
+  const layoutMode = ec.layout
+  if (layoutMode !== 'original') {
+    const layoutStyle = document.getElementById('searchbeauti-layout')
+    if (!layoutStyle) {
+      styleMissing = true
+    }
+  }
+
+  // Check dark mode stylesheet
+  if (currentConfig.global.darkMode !== 'off') {
+    const darkStyle = document.getElementById('searchbeauti-dark-mode')
+    if (!darkStyle) {
+      styleMissing = true
+    }
+  }
+
+  // Check eye protect stylesheet
+  if (ec.eyeProtection?.enabled) {
+    const eyeStyle = document.getElementById('searchbeauti-eye-protect')
+    if (!eyeStyle) {
+      styleMissing = true
+    }
+  }
+
+  // Check hide sidebar stylesheet
+  if (ec.hideSidebar) {
+    const sidebarStyle = document.getElementById('searchbeauti-hide-sidebar')
+    if (!sidebarStyle) {
+      styleMissing = true
+    }
+  }
+
+  if (styleMissing) {
+    console.log('[SearchBeauti] Active stylesheet missing, forcing re-initialization...')
+    forceReinit()
+  }
+}
+
+// Schedule checks with debouncing to prevent performance degradation on rapid DOM mutations
+function scheduleChecks() {
+  if (debounceTimer !== null) {
+    clearTimeout(debounceTimer)
+  }
+  debounceTimer = window.setTimeout(() => {
+    debounceTimer = null
+    triggerReinit()
+    checkStyleTags()
+  }, 100)
+}
+
+// Set up event listeners and mutation observers for URL changes and styles checking
+function setupUrlChangeListener() {
+  window.addEventListener('popstate', scheduleChecks)
+  window.addEventListener('hashchange', scheduleChecks)
+
+  // Observe all DOM mutations under documentElement (remains active through SPA head/body replacements)
+  const observer = new MutationObserver(scheduleChecks)
+  observer.observe(document.documentElement, { childList: true, subtree: true })
+
+  // Fallback periodic check (every 1 second) in case observers are delayed
+  setInterval(scheduleChecks, 1000)
+}
+
+async function main() {
+  // Load initial config
+  currentConfig = await loadConfig()
+
+  // Initialize features for the first page load
+  await triggerReinit()
+
+  // Setup URL change and stylesheet listeners
+  setupUrlChangeListener()
 
   // Listen for config changes from popup
   onConfigChanged((newConfig: AppConfig) => {
@@ -76,20 +219,16 @@ async function main() {
       f.onConfigChange?.(newConfig)
     }
 
-    // Handle engine enable/disable
-    const wasEnabled = getEngineConfig(config, adapter).enabled
-    const nowEnabled = getEngineConfig(newConfig, adapter).enabled
+    if (!currentAdapter) return
+    const wasEnabled = getEngineConfig(currentConfig, currentAdapter).enabled
+    const nowEnabled = getEngineConfig(newConfig, currentAdapter).enabled
     if (!wasEnabled && nowEnabled) {
-      initFeatures(newConfig, adapter)
+      initFeatures(newConfig, currentAdapter)
     } else if (wasEnabled && !nowEnabled) {
       destroyFeatures()
     }
   })
 }
 
-// Run after DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', main)
-} else {
-  main()
-}
+// Start immediately (at document_start)
+main()

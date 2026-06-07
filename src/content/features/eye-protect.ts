@@ -24,7 +24,7 @@ export const eyeProtectFeature: Feature = {
     currentAdapter = adapter
     const ec = config.engines[adapter.name].eyeProtection
     if (ec.enabled) {
-      document.body.appendChild(createOverlay(config, adapter))
+      (document.body || document.documentElement).appendChild(createOverlay(config, adapter))
     }
   },
 
@@ -38,7 +38,7 @@ export const eyeProtectFeature: Feature = {
         existing.style.background = ec.color
         existing.style.opacity = String(ec.opacity)
       } else {
-        document.body.appendChild(createOverlay(config, currentAdapter))
+        (document.body || document.documentElement).appendChild(createOverlay(config, currentAdapter))
       }
     } else {
       existing?.remove()

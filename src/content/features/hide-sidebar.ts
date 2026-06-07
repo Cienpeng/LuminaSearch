@@ -10,7 +10,8 @@ function inject(adapter: EngineAdapter) {
   style.id = STYLE_ID
   style.setAttribute('data-searchbeauti', 'hide-sidebar')
   style.textContent = `${adapter.selectors.sidebar} { display: none !important; }`
-  document.head.appendChild(style)
+  const container = document.head || document.documentElement
+  container.appendChild(style)
 }
 
 function remove() {

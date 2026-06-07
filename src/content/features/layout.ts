@@ -246,7 +246,7 @@ form.tsf {
 }
 
 /* === Card styling for Google results === */
-#rso .MjjYud {
+#rso .MjjYud:has(a) {
   background: #fff !important;
   border-radius: 12px !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
@@ -257,7 +257,7 @@ form.tsf {
   box-sizing: border-box !important;
   width: 100% !important;
 }
-#rso .MjjYud:hover {
+#rso .MjjYud:has(a):hover {
   box-shadow: 0 4px 16px rgba(92, 124, 250, 0.18) !important;
   border-color: #bac8ff !important;
 }
@@ -358,6 +358,7 @@ const BAIDU_SINGLE_CSS = `
   padding-right: 0 !important;
   justify-content: center !important;
   width: 100% !important;
+  gap: 28px !important;
 }
 
 /* === Center pagination === */
@@ -427,7 +428,8 @@ function inject(engine: string, mode: LayoutMode) {
   style.id = STYLE_ID
   style.setAttribute('data-searchbeauti', 'layout')
   style.textContent = css
-  document.head.appendChild(style)
+  const container = document.head || document.documentElement
+  container.appendChild(style)
   currentMode = mode
 }
 

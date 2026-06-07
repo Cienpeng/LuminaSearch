@@ -286,7 +286,8 @@ export const darkModeFeature: Feature = {
     style.id = STYLE_ID
     style.setAttribute('data-searchbeauti', this.name)
     style.textContent = darkCSS
-    document.head.appendChild(style)
+    const container = document.head || document.documentElement
+    container.appendChild(style)
 
     applyMode(config.global.darkMode)
   },
