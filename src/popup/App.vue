@@ -11,6 +11,8 @@ function getIconUrl(key: EngineName): string {
   return chrome.runtime.getURL(engineIcons[key])
 }
 
+const logoUrl = chrome.runtime.getURL('public/icons/logo.svg')
+
 const config = reactive<AppConfig>({
   global: { lang: 'zh' },
   engines: {
@@ -32,7 +34,7 @@ const engines: { key: EngineName; label: string }[] = [
 // i18n Translation Dictionary
 const translations = {
   zh: {
-    title: 'SearchFlow',
+    title: 'LuminaSearch',
     subtitle: '搜索引擎结果美化与优化',
     globalSettings: '全局设置',
     engineSettings: '单引擎设置',
@@ -49,10 +51,10 @@ const translations = {
     eyeOpacity: '护眼深度',
     hideSidebar: '隐藏推广侧边栏',
     hideSidebarDesc: '移除右侧的侧边栏推荐面板以聚焦内容',
-    footer: 'SearchFlow v1.0 · 浏览器插件',
+    footer: 'LuminaSearch v1.0 · ',
   },
   en: {
-    title: 'SearchFlow',
+    title: 'LuminaSearch',
     subtitle: 'Search Results Enhancement',
     globalSettings: 'Global Settings',
     engineSettings: 'Engine Settings',
@@ -69,7 +71,7 @@ const translations = {
     eyeOpacity: 'Opacity',
     hideSidebar: 'Hide Sidebar Column',
     hideSidebarDesc: 'Remove the sidebar panel on results pages',
-    footer: 'SearchFlow v1.0 · Chrome Extension',
+    footer: 'LuminaSearch v1.0 · ',
   },
 }
 
@@ -129,7 +131,7 @@ const currentEngine = reactive({
     <!-- Header -->
     <header class="app-header">
       <div class="header-left">
-        <div class="logo">S</div>
+        <img :src="logoUrl" class="logo-img" alt="LuminaSearch" />
         <div>
           <h1 class="app-title">{{ t('title') }}</h1>
           <p class="app-subtitle">{{ t('subtitle') }}</p>
@@ -213,7 +215,14 @@ const currentEngine = reactive({
 
     <!-- Footer -->
     <footer class="app-footer">
-      <p>{{ t('footer') }}</p>
+      <p>
+        <span>{{ t('footer') }}</span>
+        <a href="https://github.com/your-username/your-repo" target="_blank" class="github-link" title="GitHub Repository">
+          <svg viewBox="0 0 24 24" width="14" height="14" class="github-icon">
+            <path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.164 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+          </svg>
+        </a>
+      </p>
     </footer>
   </div>
 </template>
@@ -243,17 +252,10 @@ const currentEngine = reactive({
   align-items: center;
   gap: 10px;
 }
-.logo {
+.logo-img {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: #0284c7;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
 }
 .app-title {
@@ -311,7 +313,6 @@ const currentEngine = reactive({
   font-size: 13px;
   font-weight: 500;
   color: #334155;
-  margin: 0;
 }
 .setting-desc {
   font-size: 11px;
@@ -335,12 +336,12 @@ const currentEngine = reactive({
   flex-shrink: 0;
 }
 .lang-btn:hover {
-  background: #e0f2fe;
-  border-color: #bae6fd;
-  color: #0369a1;
+  background: #FEF3E2;
+  border-color: #F8C387;
+  color: #D97706;
 }
 .lang-btn:active {
-  background: #bae6fd;
+  background: #FDE4C3;
 }
 
 /* Engine Tabs */
@@ -371,10 +372,10 @@ const currentEngine = reactive({
   background: rgba(255, 255, 255, 0.6);
 }
 .engine-tab.active {
-  background: #e0f2fe;
-  color: #0369a1;
-  border-color: #bae6fd;
-  box-shadow: 0 0 0 1px rgba(2, 132, 199, 0.15), 0 1px 3px rgba(2, 132, 199, 0.12);
+  background: #FEF3E2;
+  color: #D97706;
+  border-color: #F8C387;
+  box-shadow: 0 0 0 1px rgba(248, 195, 135, 0.2), 0 1px 3px rgba(248, 195, 135, 0.15);
   font-weight: 600;
 }
 .engine-icon {
@@ -403,6 +404,22 @@ const currentEngine = reactive({
   font-size: 10px;
   color: #c0c8d4;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.github-link {
+  color: #c0c8d4;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.github-link:hover {
+  color: #F8C387;
+}
+.github-icon {
+  vertical-align: middle;
 }
 </style>
 

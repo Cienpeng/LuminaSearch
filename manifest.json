@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "SearchFlow",
+  "name": "LuminaSearch",
   "version": "1.0.0",
   "description": "Beautify Baidu, Google, and Bing search results — grid layouts, favicons, infinite pagination, and eye protection.",
   "icons": {
@@ -10,7 +10,12 @@
   },
   "action": {
     "default_popup": "src/popup/index.html",
-    "default_title": "SearchFlow"
+    "default_title": "LuminaSearch",
+    "default_icon": {
+      "16": "public/icons/icon-16.png",
+      "48": "public/icons/icon-48.png",
+      "128": "public/icons/icon-128.png"
+    }
   },
   "content_scripts": [
     {

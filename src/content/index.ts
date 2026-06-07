@@ -11,13 +11,13 @@ import { layoutFeature } from './features/layout'
 
 // Synchronously inject anti-flash styles at document_start to prevent FOOC
 const antiFlash = document.createElement('style')
-antiFlash.id = 'searchflow-anti-flash'
+antiFlash.id = 'luminasearch-anti-flash'
 antiFlash.textContent = 'html { opacity: 0 !important; }'
 document.documentElement.appendChild(antiFlash)
 
 // Safety fallback to restore visibility if initialization hangs
 setTimeout(() => {
-  document.getElementById('searchflow-anti-flash')?.remove()
+  document.getElementById('luminasearch-anti-flash')?.remove()
 }, 500)
 
 const adapters: EngineAdapter[] = [bingAdapter, baiduAdapter, googleAdapter]
@@ -55,7 +55,7 @@ async function initFeatures(config: AppConfig, adapter: EngineAdapter) {
       if (res instanceof Promise) await res
       activeFeatures.push(feature)
     } catch (err) {
-      console.error(`[SearchFlow] Error initializing feature ${feature.name}:`, err)
+      console.error(`[LuminaSearch] Error initializing feature ${feature.name}:`, err)
     }
   }
 }
@@ -65,7 +65,7 @@ function destroyFeatures() {
     try {
       f.destroy?.()
     } catch (err) {
-      console.error(`[SearchBeauti] Error destroying feature ${f.name}:`, err)
+      console.error(`[LuminaSearch] Error destroying feature ${f.name}:`, err)
     }
   }
   activeFeatures = []
@@ -98,7 +98,7 @@ async function performInit(url: string) {
     await initFeatures(currentConfig, adapter)
   } finally {
     // Always remove anti-flash styles to restore page visibility
-    document.getElementById('searchflow-anti-flash')?.remove()
+    document.getElementById('luminasearch-anti-flash')?.remove()
   }
 }
 
@@ -110,12 +110,12 @@ async function triggerReinit() {
   try {
     while (location.href !== lastProcessedUrl) {
       const urlToProcess = location.href
-      console.log(`[SearchFlow] Initializing layout for URL: ${urlToProcess}`)
+      console.log(`[LuminaSearch] Initializing layout for URL: ${urlToProcess}`)
       await performInit(urlToProcess)
       lastProcessedUrl = urlToProcess
     }
   } catch (err) {
-    console.error('[SearchFlow] Error during initialization:', err)
+    console.error('[LuminaSearch] Error during initialization:', err)
   } finally {
     isInitializing = false
   }
@@ -139,7 +139,7 @@ function checkStyleTags() {
   // Check layout stylesheet
   const layoutMode = ec.layout
   if (layoutMode !== 'original') {
-    const layoutStyle = document.getElementById('searchbeauti-layout')
+    const layoutStyle = document.getElementById('luminasearch-layout')
     if (!layoutStyle) {
       styleMissing = true
     }
@@ -149,7 +149,7 @@ function checkStyleTags() {
 
   // Check eye protect stylesheet
   if (ec.eyeProtection?.enabled) {
-    const eyeStyle = document.getElementById('searchbeauti-eye-protect')
+    const eyeStyle = document.getElementById('luminasearch-eye-protect')
     if (!eyeStyle) {
       styleMissing = true
     }
@@ -157,14 +157,14 @@ function checkStyleTags() {
 
   // Check hide sidebar stylesheet
   if (ec.hideSidebar) {
-    const sidebarStyle = document.getElementById('searchbeauti-hide-sidebar')
+    const sidebarStyle = document.getElementById('luminasearch-hide-sidebar')
     if (!sidebarStyle) {
       styleMissing = true
     }
   }
 
   if (styleMissing) {
-    console.log('[SearchFlow] Active stylesheet missing, forcing re-initialization...')
+    console.log('[LuminaSearch] Active stylesheet missing, forcing re-initialization...')
     forceReinit()
   }
 }

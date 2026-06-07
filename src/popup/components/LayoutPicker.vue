@@ -76,12 +76,12 @@ const options = computed(() => [
   background: #fff;
 }
 .layout-option.active {
-  border-color: #bae6fd;
-  background: #f0f9ff;
-  box-shadow: 0 1px 4px rgba(2, 132, 199, 0.12);
+  border-color: #F8C387;
+  background: #FEF3E2;
+  box-shadow: 0 1px 4px rgba(248, 195, 135, 0.2);
 }
 .layout-option.active .option-label {
-  color: #0284c7;
+  color: #D97706;
 }
 
 /* Layout preview bars */

@@ -53,12 +53,12 @@ defineProps<{
 <style>
 /* El-Switch global overrides */
 .el-switch {
-  --el-switch-on-color: #0284c7;
+  --el-switch-on-color: #F8C387;
   --el-switch-off-color: #d1d5db;
 }
 .el-switch.is-checked .el-switch__core {
-  background-color: #0284c7;
-  border-color: #0284c7;
+  background-color: #F8C387;
+  border-color: #F8C387;
 }
 .el-switch .el-switch__core {
   border-radius: 12px;

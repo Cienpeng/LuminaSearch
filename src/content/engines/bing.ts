@@ -5,7 +5,7 @@ export const bingAdapter: EngineAdapter = {
   match: (url: string) => /\.bing\.com\//.test(url),
   isSearchPage: (url: string) => /\.bing\.com\/search($|\?|\/)/.test(url),
   selectors: {
-    resultItem: '#b_results > li.b_algo',
+    resultItem: '#b_results > li.b_algo, #b_results > li.b_ans, #b_results > li.b_ad',
     resultLink: 'h2 > a',
     resultTitle: 'h2',
     resultSnippet: '.b_caption p',

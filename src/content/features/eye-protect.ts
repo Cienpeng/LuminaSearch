@@ -1,6 +1,6 @@
 import type { Feature, AppConfig, EngineAdapter } from '../../shared/types'
 
-const OVERLAY_ID = 'searchbeauti-eye-protect'
+const OVERLAY_ID = 'luminasearch-eye-protect'
 
 let currentAdapter: EngineAdapter | null = null
 
@@ -8,7 +8,7 @@ function createOverlay(config: AppConfig, adapter: EngineAdapter): HTMLDivElemen
   const ec = config.engines[adapter.name].eyeProtection
   const el = document.createElement('div')
   el.id = OVERLAY_ID
-  el.setAttribute('data-searchbeauti', 'eye-protect')
+  el.setAttribute('data-luminasearch', 'eye-protect')
   el.style.cssText = `
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: ${ec.color}; opacity: ${ec.opacity};

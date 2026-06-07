@@ -1,6 +1,6 @@
 import type { Feature, AppConfig, EngineAdapter } from '../../shared/types'
 
-const FAVICON_CLASS = 'searchbeauti-favicon'
+const FAVICON_CLASS = 'luminasearch-favicon'
 
 let currentAdapter: EngineAdapter | null = null
 
@@ -38,7 +38,7 @@ function addFavicon(item: HTMLElement, domain: string, insertSelector: string) {
 
   const img = document.createElement('img')
   img.className = FAVICON_CLASS
-  img.setAttribute('data-searchbeauti', 'favicon')
+  img.setAttribute('data-luminasearch', 'favicon')
   img.src = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=32`
   img.width = 16
   img.height = 16
@@ -59,10 +59,10 @@ function removeAll() {
   document.querySelectorAll(`.${FAVICON_CLASS}`).forEach((el) => el.remove())
 }
 
-function isSearchBeautiNode(node: Node): boolean {
+function isLuminaSearchNode(node: Node): boolean {
   if (node.nodeType !== 1) return true
   const el = node as HTMLElement
-  if (el.classList.contains(FAVICON_CLASS) || el.getAttribute('data-searchbeauti')) {
+  if (el.classList.contains(FAVICON_CLASS) || el.getAttribute('data-luminasearch')) {
     return true
   }
   return false
@@ -86,7 +86,7 @@ function startDomWatcher(config: AppConfig, adapter: EngineAdapter) {
     for (let i = 0; i < mutations.length; i++) {
       const addedNodes = mutations[i].addedNodes
       for (let j = 0; j < addedNodes.length; j++) {
-        if (!isSearchBeautiNode(addedNodes[j])) {
+        if (!isLuminaSearchNode(addedNodes[j])) {
           hasAddedNodes = true
           break
         }

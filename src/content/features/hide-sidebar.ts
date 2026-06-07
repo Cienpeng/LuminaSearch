@@ -1,6 +1,6 @@
 import type { Feature, AppConfig, EngineAdapter } from '../../shared/types'
 
-const STYLE_ID = 'searchbeauti-hide-sidebar'
+const STYLE_ID = 'luminasearch-hide-sidebar'
 
 let currentAdapter: EngineAdapter | null = null
 
@@ -8,7 +8,7 @@ function inject(adapter: EngineAdapter) {
   remove()
   const style = document.createElement('style')
   style.id = STYLE_ID
-  style.setAttribute('data-searchbeauti', 'hide-sidebar')
+  style.setAttribute('data-luminasearch', 'hide-sidebar')
   style.textContent = `${adapter.selectors.sidebar} { display: none !important; }`
   const container = document.head || document.documentElement
   container.appendChild(style)

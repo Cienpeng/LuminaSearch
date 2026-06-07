@@ -1,14 +1,14 @@
 import type { Feature, AppConfig, EngineAdapter, LayoutMode } from '../../shared/types'
 
-const STYLE_ID = 'searchbeauti-layout'
+const STYLE_ID = 'luminasearch-layout'
 
 let currentMode: LayoutMode = 'original'
 let currentAdapter: EngineAdapter | null = null
 
 const BING_SINGLE_CSS = `
 :root {
-  --searchbeauti-bing-list-width: min(972px, calc(100vw - 48px));
-  --searchbeauti-bing-wide-width: min(1200px, calc(100vw - 48px));
+  --luminasearch-bing-list-width: min(972px, calc(100vw - 48px));
+  --luminasearch-bing-wide-width: min(1200px, calc(100vw - 48px));
 }
 
 /* === Global Page Background === */
@@ -31,8 +31,8 @@ body.sb-scrolling * {
 /* === Center Bing's wide top answer that sits outside #b_results === */
 #b_topw {
   display: block !important;
-  width: var(--searchbeauti-bing-wide-width) !important;
-  max-width: var(--searchbeauti-bing-wide-width) !important;
+  width: var(--luminasearch-bing-wide-width) !important;
+  max-width: var(--luminasearch-bing-wide-width) !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
   margin-left: auto !important;
@@ -54,7 +54,7 @@ body.sb-scrolling * {
 /* === Center the results list === */
 #b_results {
   display: block !important;
-  width: var(--searchbeauti-bing-list-width) !important;
+  width: var(--luminasearch-bing-list-width) !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
   margin-left: auto !important;
@@ -173,7 +173,7 @@ body.sb-scrolling * {
 /* === Center the search box and scope bar — same width as cards === */
 #sb_form {
   display: block !important;
-  width: var(--searchbeauti-bing-list-width) !important;
+  width: var(--luminasearch-bing-list-width) !important;
   margin: 0 auto !important;
 }
 .b_searchboxForm {
@@ -181,7 +181,7 @@ body.sb-scrolling * {
 }
 .b_scopebar {
   display: block !important;
-  width: var(--searchbeauti-bing-list-width) !important;
+  width: var(--luminasearch-bing-list-width) !important;
   margin-left: auto !important;
   margin-right: auto !important;
 }
@@ -189,8 +189,8 @@ body.sb-scrolling * {
 /* === Center Bing's b_pole (Overview / tabs) === */
 #b_pole {
   display: block !important;
-  width: var(--searchbeauti-bing-list-width) !important;
-  max-width: var(--searchbeauti-bing-list-width) !important;
+  width: var(--luminasearch-bing-list-width) !important;
+  max-width: var(--luminasearch-bing-list-width) !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
   margin-left: auto !important;
@@ -209,7 +209,7 @@ body:not(:has(.pole-mag)) #b_pole .wptabs_cont {
 }
 
 /* === App-pill Favicon Styling === */
-img.searchbeauti-favicon {
+img.luminasearch-favicon {
   width: 20px !important;
   height: 20px !important;
   padding: 3px !important;
@@ -225,7 +225,7 @@ img.searchbeauti-favicon {
 
 const GOOGLE_SINGLE_CSS = `
 :root {
-  --searchbeauti-google-list-width: min(972px, calc(100vw - 48px));
+  --luminasearch-google-list-width: min(972px, calc(100vw - 48px));
 }
 
 /* === Global Page Background === */
@@ -244,8 +244,8 @@ body.sb-scrolling * {
 }
 
 #center_col {
-  width: var(--searchbeauti-google-list-width) !important;
-  max-width: var(--searchbeauti-google-list-width) !important;
+  width: var(--luminasearch-google-list-width) !important;
+  max-width: var(--luminasearch-google-list-width) !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
   margin-left: 0 !important;
@@ -256,8 +256,8 @@ body.sb-scrolling * {
 #rhs {
   margin-left: 0 !important;
   padding-left: 0 !important;
-  width: var(--searchbeauti-google-list-width) !important;
-  max-width: var(--searchbeauti-google-list-width) !important;
+  width: var(--luminasearch-google-list-width) !important;
+  max-width: var(--luminasearch-google-list-width) !important;
 }
 
 /* === Center and shorten Google Search Box === */
@@ -293,8 +293,8 @@ form.tsf {
 .HTOhZ {
   margin-left: auto !important;
   margin-right: auto !important;
-  width: var(--searchbeauti-google-list-width) !important;
-  max-width: var(--searchbeauti-google-list-width) !important;
+  width: var(--luminasearch-google-list-width) !important;
+  max-width: var(--luminasearch-google-list-width) !important;
 }
 
 /* === Card styling for Google results === */
@@ -346,7 +346,7 @@ form.tsf {
 }
 
 /* === App-pill Favicon Styling === */
-img.searchbeauti-favicon {
+img.luminasearch-favicon {
   width: 20px !important;
   height: 20px !important;
   padding: 3px !important;
@@ -362,7 +362,7 @@ img.searchbeauti-favicon {
 
 const BAIDU_SINGLE_CSS = `
 :root {
-  --searchbeauti-baidu-list-width: min(972px, calc(100vw - 48px));
+  --luminasearch-baidu-list-width: min(972px, calc(100vw - 48px));
 }
 
 /* === Global Page Background === */
@@ -377,7 +377,7 @@ body.sb-scrolling * {
 #container {
   margin-left: auto !important;
   margin-right: auto !important;
-  width: var(--searchbeauti-baidu-list-width) !important;
+  width: var(--luminasearch-baidu-list-width) !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
@@ -440,7 +440,7 @@ body.sb-scrolling * {
 .s_tab {
   margin-left: auto !important;
   margin-right: auto !important;
-  width: var(--searchbeauti-baidu-list-width) !important;
+  width: var(--luminasearch-baidu-list-width) !important;
   padding-left: 0 !important;
 }
 #s_tab_inner,
@@ -516,7 +516,7 @@ body.sb-scrolling * {
 }
 
 /* === App-pill Favicon Styling === */
-img.searchbeauti-favicon {
+img.luminasearch-favicon {
   width: 20px !important;
   height: 20px !important;
   padding: 3px !important;
@@ -532,8 +532,8 @@ img.searchbeauti-favicon {
 
 const BING_DOUBLE_CSS = `
 :root {
-  --searchbeauti-bing-list-width: min(1200px, calc(100vw - 48px));
-  --searchbeauti-bing-wide-width: min(1200px, calc(100vw - 48px));
+  --luminasearch-bing-list-width: min(1200px, calc(100vw - 48px));
+  --luminasearch-bing-wide-width: min(1200px, calc(100vw - 48px));
 }
 
 /* === Global Page Background === */
@@ -556,8 +556,8 @@ body.sb-scrolling * {
 /* === Center Bing's wide top answer === */
 #b_topw {
   display: block !important;
-  width: var(--searchbeauti-bing-wide-width) !important;
-  max-width: var(--searchbeauti-bing-wide-width) !important;
+  width: var(--luminasearch-bing-wide-width) !important;
+  max-width: var(--luminasearch-bing-wide-width) !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
   margin-left: auto !important;
@@ -579,7 +579,7 @@ body.sb-scrolling * {
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: 16px !important;
   align-items: stretch !important;
-  width: var(--searchbeauti-bing-list-width) !important;
+  width: var(--luminasearch-bing-list-width) !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
   margin-left: auto !important;
@@ -735,7 +735,7 @@ body:not(:has(.pole-mag)) #b_pole .wptabs_cont {
 }
 
 /* === App-pill Favicon Styling === */
-img.searchbeauti-favicon {
+img.luminasearch-favicon {
   width: 20px !important;
   height: 20px !important;
   padding: 3px !important;
@@ -805,7 +805,7 @@ body.sb-double-layout #b_results > li.b_ad.expanded::after {
 
 const GOOGLE_DOUBLE_CSS = `
 :root {
-  --searchbeauti-google-list-width: min(1200px, calc(100vw - 48px));
+  --luminasearch-google-list-width: min(1200px, calc(100vw - 48px));
 }
 
 /* === Global Page Background === */
@@ -824,8 +824,8 @@ body.sb-scrolling * {
 }
 
 #center_col {
-  width: var(--searchbeauti-google-list-width) !important;
-  max-width: var(--searchbeauti-google-list-width) !important;
+  width: var(--luminasearch-google-list-width) !important;
+  max-width: var(--luminasearch-google-list-width) !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
   margin-left: 0 !important;
@@ -836,8 +836,8 @@ body.sb-scrolling * {
 #rhs {
   margin-left: 0 !important;
   padding-left: 0 !important;
-  width: var(--searchbeauti-google-list-width) !important;
-  max-width: var(--searchbeauti-google-list-width) !important;
+  width: var(--luminasearch-google-list-width) !important;
+  max-width: var(--luminasearch-google-list-width) !important;
 }
 
 /* === Center and shorten Google Search Box === */
@@ -939,7 +939,7 @@ form.tsf {
 }
 
 /* === App-pill Favicon Styling === */
-img.searchbeauti-favicon {
+img.luminasearch-favicon {
   width: 20px !important;
   height: 20px !important;
   padding: 3px !important;
@@ -1003,7 +1003,7 @@ body.sb-double-layout #rso .MjjYud.expanded:has(a)::after {
 
 const BAIDU_DOUBLE_CSS = `
 :root {
-  --searchbeauti-baidu-list-width: min(1200px, calc(100vw - 48px));
+  --luminasearch-baidu-list-width: min(1200px, calc(100vw - 48px));
 }
 
 /* === Global Page Background === */
@@ -1018,7 +1018,7 @@ body.sb-scrolling * {
 #container {
   margin-left: auto !important;
   margin-right: auto !important;
-  width: var(--searchbeauti-baidu-list-width) !important;
+  width: var(--luminasearch-baidu-list-width) !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
@@ -1165,7 +1165,7 @@ body.sb-scrolling * {
 }
 
 /* === App-pill Favicon Styling === */
-img.searchbeauti-favicon {
+img.luminasearch-favicon {
   width: 20px !important;
   height: 20px !important;
   padding: 3px !important;
@@ -1293,7 +1293,7 @@ function processDoubleLayoutCards(container: Element, itemSelector: string) {
       if (!card.querySelector('.sb-expand-btn')) {
         const btn = document.createElement('div')
         btn.className = 'sb-expand-btn'
-        btn.setAttribute('data-searchbeauti', 'expand-btn')
+        btn.setAttribute('data-luminasearch', 'expand-btn')
         btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" style="transition: transform 0.2s;"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>`
         
         btn.addEventListener('click', (e) => {
@@ -1335,7 +1335,7 @@ function runDoubleLayoutProcessor(adapter: EngineAdapter) {
 function isDoubleLayoutExtendNode(node: Node): boolean {
   if (node.nodeType !== 1) return true
   const el = node as HTMLElement
-  if (el.classList.contains('sb-expand-btn') || el.getAttribute('data-searchbeauti')) {
+  if (el.classList.contains('sb-expand-btn') || el.getAttribute('data-luminasearch')) {
     return true
   }
   return false
@@ -1402,7 +1402,7 @@ function inject(engine: string, mode: LayoutMode) {
 
   const style = document.createElement('style')
   style.id = STYLE_ID
-  style.setAttribute('data-searchbeauti', 'layout')
+  style.setAttribute('data-luminasearch', 'layout')
   style.textContent = css
   const container = document.head || document.documentElement
   container.appendChild(style)

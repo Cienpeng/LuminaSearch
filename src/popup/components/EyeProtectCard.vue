@@ -105,7 +105,7 @@ const presetColors = ['#c8e6c9', '#fff9c4', '#f8bbd0', '#bbdefb', '#e1bee7', '#d
   transform: scale(1.12);
 }
 .preset-dot.active {
-  border-color: #0284c7;
+  border-color: #F8C387;
   transform: scale(1.12);
 }
 
@@ -143,7 +143,7 @@ const presetColors = ['#c8e6c9', '#fff9c4', '#f8bbd0', '#bbdefb', '#e1bee7', '#d
 
 /* Slider global overrides */
 .eye-card .el-slider {
-  --el-slider-main-bg-color: #0284c7;
+  --el-slider-main-bg-color: #F8C387;
   --el-slider-runway-bg-color: #eef1f5;
 }
 .eye-card .el-slider .el-slider__runway {
@@ -157,7 +157,7 @@ const presetColors = ['#c8e6c9', '#fff9c4', '#f8bbd0', '#bbdefb', '#e1bee7', '#d
 .eye-card .el-slider .el-slider__button {
   width: 14px;
   height: 14px;
-  border-color: #0284c7;
-  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.3);
+  border-color: #F8C387;
+  box-shadow: 0 1px 3px rgba(248, 195, 135, 0.4);
 }
 </style>

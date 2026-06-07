@@ -1,7 +1,8 @@
 import type { Feature, AppConfig, EngineAdapter } from '../../shared/types'
 
-const LOADER_ID = 'searchbeauti-pagination-loader'
-const SENTINEL_ID = 'searchbeauti-sentinel'
+const LOADER_ID = 'luminasearch-pagination-loader'
+const SENTINEL_ID = 'luminasearch-sentinel'
+const HIDE_STYLE_ID = 'luminasearch-pagination-hide-style'
 
 interface PaginationState {
   loading: boolean
@@ -34,7 +35,7 @@ function findNextUrlInDoc(doc: Document | Element, selector: string): string | n
 function createLoader(): HTMLDivElement {
   const el = document.createElement('div')
   el.id = LOADER_ID
-  el.setAttribute('data-searchbeauti', 'pagination-loader')
+  el.setAttribute('data-luminasearch', 'pagination-loader')
   el.style.cssText = 'text-align:center;padding:16px;color:#94a3b8;font-size:13px;'
   el.textContent = 'Loading more results...'
   return el
@@ -43,7 +44,7 @@ function createLoader(): HTMLDivElement {
 function createSentinel(): HTMLDivElement {
   const el = document.createElement('div')
   el.id = SENTINEL_ID
-  el.setAttribute('data-searchbeauti', 'sentinel')
+  el.setAttribute('data-luminasearch', 'sentinel')
   el.style.cssText = 'height:1px;width:100%;'
   return el
 }
@@ -79,9 +80,6 @@ async function loadNextPage(
     state.nextUrl = findNextUrlInDoc(doc, adapter.selectors.nextPageLink)
 
     loader.remove()
-
-    const oldNav = contentArea.querySelector('nav[role="navigation"]')
-    oldNav?.remove()
 
     return newItems
   } catch {
@@ -127,11 +125,44 @@ function setupScrollObserver(adapter: EngineAdapter, contentArea: Element) {
 function getQueryFromUrl(urlStr: string): string {
   try {
     const url = new URL(urlStr, location.href)
-    const q = url.searchParams.get('q') || url.searchParams.get('wd') || url.searchParams.get('word') || ''
-    return decodeURIComponent(q).toLowerCase().replace(/\+/g, ' ').trim()
+    let q = url.searchParams.get('q') || url.searchParams.get('wd') || url.searchParams.get('word')
+    
+    // Fallback to check hash parameters if search parameters are empty
+    if (!q && url.hash) {
+      const hashParams = new URLSearchParams(url.hash.substring(1))
+      q = hashParams.get('q') || hashParams.get('wd') || hashParams.get('word')
+    }
+    
+    return q ? decodeURIComponent(q).toLowerCase().replace(/\+/g, ' ').trim() : ''
   } catch {
     return ''
   }
+}
+
+function hideOriginalPagination(adapter: EngineAdapter) {
+  removeHideStyle()
+  const style = document.createElement('style')
+  style.id = HIDE_STYLE_ID
+  style.setAttribute('data-luminasearch', 'pagination-hide')
+  
+  let selectors = ''
+  if (adapter.name === 'google') {
+    selectors = '#navcnt, #foot, #botstuff table, nav[role="navigation"]'
+  } else if (adapter.name === 'baidu') {
+    selectors = '#page'
+  } else if (adapter.name === 'bing') {
+    selectors = '.b_pag, #b_results > li.b_pag'
+  }
+  
+  if (selectors) {
+    style.textContent = `${selectors} { display: none !important; }`
+    const container = document.head || document.documentElement
+    container.appendChild(style)
+  }
+}
+
+function removeHideStyle() {
+  document.getElementById(HIDE_STYLE_ID)?.remove()
 }
 
 function tryInit(adapter: EngineAdapter) {
@@ -148,8 +179,7 @@ function tryInit(adapter: EngineAdapter) {
     const contentArea = document.querySelector(adapter.selectors.pageContent)
     if (!contentArea) return false
 
-    const nav = contentArea.querySelector('nav[role="navigation"]')
-    nav?.remove()
+    hideOriginalPagination(adapter)
 
     setupScrollObserver(adapter, contentArea)
     return true
@@ -218,6 +248,7 @@ function cleanup() {
   }
   document.getElementById(LOADER_ID)?.remove()
   document.getElementById(SENTINEL_ID)?.remove()
+  removeHideStyle()
   state.nextUrl = null
   state.currentPage = 1
 }
