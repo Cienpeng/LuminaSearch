@@ -59,17 +59,54 @@ function removeAll() {
   document.querySelectorAll(`.${FAVICON_CLASS}`).forEach((el) => el.remove())
 }
 
+function isSearchBeautiNode(node: Node): boolean {
+  if (node.nodeType !== 1) return true
+  const el = node as HTMLElement
+  if (el.classList.contains(FAVICON_CLASS) || el.getAttribute('data-searchbeauti')) {
+    return true
+  }
+  return false
+}
+
 let domWatcher: MutationObserver | null = null
+let debounceTimer: number | null = null
 
 function startDomWatcher(config: AppConfig, adapter: EngineAdapter) {
-  if (domWatcher) domWatcher.disconnect()
+  if (domWatcher) {
+    domWatcher.disconnect()
+    domWatcher = null
+  }
+  if (debounceTimer !== null) {
+    clearTimeout(debounceTimer)
+    debounceTimer = null
+  }
 
-  domWatcher = new MutationObserver(() => {
-    const items = Array.from(document.querySelectorAll<HTMLElement>(adapter.selectors.resultItem))
-    processItems(items, adapter)
+  domWatcher = new MutationObserver((mutations) => {
+    let hasAddedNodes = false
+    for (let i = 0; i < mutations.length; i++) {
+      const addedNodes = mutations[i].addedNodes
+      for (let j = 0; j < addedNodes.length; j++) {
+        if (!isSearchBeautiNode(addedNodes[j])) {
+          hasAddedNodes = true
+          break
+        }
+      }
+      if (hasAddedNodes) break
+    }
+    if (!hasAddedNodes) return
+
+    if (debounceTimer !== null) {
+      clearTimeout(debounceTimer)
+    }
+    debounceTimer = window.setTimeout(() => {
+      debounceTimer = null
+      const items = Array.from(document.querySelectorAll<HTMLElement>(adapter.selectors.resultItem))
+      processItems(items, adapter)
+    }, 100)
   })
 
-  domWatcher.observe(document.documentElement, {
+  const target = document.querySelector(adapter.selectors.pageContent) || document.body
+  domWatcher.observe(target, {
     childList: true,
     subtree: true,
   })
@@ -107,6 +144,10 @@ export const faviconFeature: Feature = {
         domWatcher.disconnect()
         domWatcher = null
       }
+      if (debounceTimer !== null) {
+        clearTimeout(debounceTimer)
+        debounceTimer = null
+      }
       removeAll()
     }
   },
@@ -116,6 +157,10 @@ export const faviconFeature: Feature = {
     if (domWatcher) {
       domWatcher.disconnect()
       domWatcher = null
+    }
+    if (debounceTimer !== null) {
+      clearTimeout(debounceTimer)
+      debounceTimer = null
     }
     removeAll()
   },

@@ -3,7 +3,6 @@ import { loadConfig, onConfigChanged } from '../shared/storage'
 import { bingAdapter } from './engines/bing'
 import { baiduAdapter } from './engines/baidu'
 import { googleAdapter } from './engines/google'
-import { darkModeFeature } from './features/dark-mode'
 import { eyeProtectFeature } from './features/eye-protect'
 import { faviconFeature } from './features/favicon'
 import { paginationFeature, setOnResultsAdded } from './features/pagination'
@@ -12,18 +11,17 @@ import { layoutFeature } from './features/layout'
 
 // Synchronously inject anti-flash styles at document_start to prevent FOOC
 const antiFlash = document.createElement('style')
-antiFlash.id = 'searchbeauti-anti-flash'
+antiFlash.id = 'searchflow-anti-flash'
 antiFlash.textContent = 'html { opacity: 0 !important; }'
 document.documentElement.appendChild(antiFlash)
 
 // Safety fallback to restore visibility if initialization hangs
 setTimeout(() => {
-  document.getElementById('searchbeauti-anti-flash')?.remove()
+  document.getElementById('searchflow-anti-flash')?.remove()
 }, 500)
 
 const adapters: EngineAdapter[] = [bingAdapter, baiduAdapter, googleAdapter]
 const features: Feature[] = [
-  darkModeFeature,
   eyeProtectFeature,
   faviconFeature,
   paginationFeature,
@@ -57,7 +55,7 @@ async function initFeatures(config: AppConfig, adapter: EngineAdapter) {
       if (res instanceof Promise) await res
       activeFeatures.push(feature)
     } catch (err) {
-      console.error(`[SearchBeauti] Error initializing feature ${feature.name}:`, err)
+      console.error(`[SearchFlow] Error initializing feature ${feature.name}:`, err)
     }
   }
 }
@@ -100,7 +98,7 @@ async function performInit(url: string) {
     await initFeatures(currentConfig, adapter)
   } finally {
     // Always remove anti-flash styles to restore page visibility
-    document.getElementById('searchbeauti-anti-flash')?.remove()
+    document.getElementById('searchflow-anti-flash')?.remove()
   }
 }
 
@@ -112,12 +110,12 @@ async function triggerReinit() {
   try {
     while (location.href !== lastProcessedUrl) {
       const urlToProcess = location.href
-      console.log(`[SearchBeauti] Initializing layout for URL: ${urlToProcess}`)
+      console.log(`[SearchFlow] Initializing layout for URL: ${urlToProcess}`)
       await performInit(urlToProcess)
       lastProcessedUrl = urlToProcess
     }
   } catch (err) {
-    console.error('[SearchBeauti] Error during initialization:', err)
+    console.error('[SearchFlow] Error during initialization:', err)
   } finally {
     isInitializing = false
   }
@@ -147,13 +145,7 @@ function checkStyleTags() {
     }
   }
 
-  // Check dark mode stylesheet
-  if (currentConfig.global.darkMode !== 'off') {
-    const darkStyle = document.getElementById('searchbeauti-dark-mode')
-    if (!darkStyle) {
-      styleMissing = true
-    }
-  }
+
 
   // Check eye protect stylesheet
   if (ec.eyeProtection?.enabled) {
@@ -172,7 +164,7 @@ function checkStyleTags() {
   }
 
   if (styleMissing) {
-    console.log('[SearchBeauti] Active stylesheet missing, forcing re-initialization...')
+    console.log('[SearchFlow] Active stylesheet missing, forcing re-initialization...')
     forceReinit()
   }
 }
@@ -190,16 +182,65 @@ function scheduleChecks() {
 }
 
 // Set up event listeners and mutation observers for URL changes and styles checking
+// Set up event listeners and mutation observers for URL changes and styles checking
 function setupUrlChangeListener() {
   window.addEventListener('popstate', scheduleChecks)
   window.addEventListener('hashchange', scheduleChecks)
 
   // Observe all DOM mutations under documentElement (remains active through SPA head/body replacements)
-  const observer = new MutationObserver(scheduleChecks)
+  const observer = new MutationObserver((mutations) => {
+    let shouldCheck = location.href !== lastProcessedUrl
+    if (!shouldCheck) {
+      for (let k = 0; k < mutations.length; k++) {
+        const m = mutations[k]
+        if (m.target.nodeName === 'TITLE') {
+          shouldCheck = true
+          break
+        }
+        for (let i = 0; i < m.addedNodes.length; i++) {
+          const node = m.addedNodes[i]
+          if (node.nodeName === 'STYLE' || node.nodeName === 'LINK') {
+            shouldCheck = true
+            break
+          }
+        }
+        if (shouldCheck) break
+        for (let i = 0; i < m.removedNodes.length; i++) {
+          const node = m.removedNodes[i]
+          if (node.nodeName === 'STYLE' || node.nodeName === 'LINK') {
+            shouldCheck = true
+            break
+          }
+        }
+        if (shouldCheck) break
+      }
+    }
+    if (shouldCheck) {
+      scheduleChecks()
+    }
+  })
   observer.observe(document.documentElement, { childList: true, subtree: true })
 
   // Fallback periodic check (every 1 second) in case observers are delayed
   setInterval(scheduleChecks, 1000)
+}
+
+let scrollTimeout: number | null = null
+
+function setupScrollListener() {
+  window.addEventListener('scroll', () => {
+    if (!document.body) return
+    if (!document.body.classList.contains('sb-scrolling')) {
+      document.body.classList.add('sb-scrolling')
+    }
+    if (scrollTimeout !== null) {
+      clearTimeout(scrollTimeout)
+    }
+    scrollTimeout = window.setTimeout(() => {
+      scrollTimeout = null
+      document.body?.classList.remove('sb-scrolling')
+    }, 150)
+  }, { passive: true })
 }
 
 async function main() {
@@ -211,6 +252,7 @@ async function main() {
 
   // Setup URL change and stylesheet listeners
   setupUrlChangeListener()
+  setupScrollListener()
 
   // Listen for config changes from popup
   onConfigChanged((newConfig: AppConfig) => {

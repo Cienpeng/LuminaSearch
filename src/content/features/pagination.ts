@@ -124,9 +124,26 @@ function setupScrollObserver(adapter: EngineAdapter, contentArea: Element) {
   state.observer.observe(sentinel)
 }
 
+function getQueryFromUrl(urlStr: string): string {
+  try {
+    const url = new URL(urlStr, location.href)
+    const q = url.searchParams.get('q') || url.searchParams.get('wd') || url.searchParams.get('word') || ''
+    return decodeURIComponent(q).toLowerCase().replace(/\+/g, ' ').trim()
+  } catch {
+    return ''
+  }
+}
+
 function tryInit(adapter: EngineAdapter) {
   const nextUrl = findNextUrlInDoc(document, adapter.selectors.nextPageLink)
   if (nextUrl) {
+    const currentQuery = getQueryFromUrl(location.href)
+    const nextQuery = getQueryFromUrl(nextUrl)
+
+    if (currentQuery && nextQuery && currentQuery !== nextQuery) {
+      return false
+    }
+
     state.nextUrl = nextUrl
     const contentArea = document.querySelector(adapter.selectors.pageContent)
     if (!contentArea) return false
@@ -140,20 +157,33 @@ function tryInit(adapter: EngineAdapter) {
   return false
 }
 
+let domWatcherTimer: number | null = null
+
 function startDomWatcher(adapter: EngineAdapter) {
   if (state.domWatcher) {
     state.domWatcher.disconnect()
+    state.domWatcher = null
+  }
+  if (domWatcherTimer !== null) {
+    clearTimeout(domWatcherTimer)
+    domWatcherTimer = null
   }
 
   const contentArea = document.querySelector(adapter.selectors.pageContent)
   const watchTarget = contentArea ?? document.body
 
   state.domWatcher = new MutationObserver(() => {
-    const result = tryInit(adapter)
-    if (result) {
-      state.domWatcher?.disconnect()
-      state.domWatcher = null
+    if (domWatcherTimer !== null) {
+      clearTimeout(domWatcherTimer)
     }
+    domWatcherTimer = window.setTimeout(() => {
+      domWatcherTimer = null
+      const result = tryInit(adapter)
+      if (result) {
+        state.domWatcher?.disconnect()
+        state.domWatcher = null
+      }
+    }, 100)
   })
 
   state.domWatcher.observe(watchTarget, {
@@ -162,8 +192,14 @@ function startDomWatcher(adapter: EngineAdapter) {
   })
 
   setTimeout(() => {
-    state.domWatcher?.disconnect()
-    state.domWatcher = null
+    if (state.domWatcher) {
+      state.domWatcher.disconnect()
+      state.domWatcher = null
+    }
+    if (domWatcherTimer !== null) {
+      clearTimeout(domWatcherTimer)
+      domWatcherTimer = null
+    }
   }, 15000)
 }
 
@@ -175,6 +211,10 @@ function cleanup() {
   if (state.domWatcher) {
     state.domWatcher.disconnect()
     state.domWatcher = null
+  }
+  if (domWatcherTimer !== null) {
+    clearTimeout(domWatcherTimer)
+    domWatcherTimer = null
   }
   document.getElementById(LOADER_ID)?.remove()
   document.getElementById(SENTINEL_ID)?.remove()

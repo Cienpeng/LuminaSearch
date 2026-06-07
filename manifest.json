@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "SearchBeauti",
+  "name": "SearchFlow",
   "version": "1.0.0",
-  "description": "Beautify Baidu, Google, and Bing search results — layouts, favicons, dark mode, and more.",
+  "description": "Beautify Baidu, Google, and Bing search results — grid layouts, favicons, infinite pagination, and eye protection.",
   "icons": {
     "16": "public/icons/icon-16.png",
     "48": "public/icons/icon-48.png",
@@ -10,7 +10,7 @@
   },
   "action": {
     "default_popup": "src/popup/index.html",
-    "default_title": "SearchBeauti"
+    "default_title": "SearchFlow"
   },
   "content_scripts": [
     {

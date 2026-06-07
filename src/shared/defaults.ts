@@ -1,7 +1,7 @@
 import type { AppConfig, EngineConfig, GlobalConfig } from './types'
 
 export const defaultGlobalConfig: GlobalConfig = {
-  darkMode: 'auto',
+  lang: 'zh',
 }
 
 export const defaultEngineConfig: EngineConfig = {

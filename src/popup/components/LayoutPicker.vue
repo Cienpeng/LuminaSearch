@@ -1,19 +1,23 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { LayoutMode } from '../../shared/types'
 
 const model = defineModel<LayoutMode>({ required: true })
 
-const options: { value: LayoutMode; label: string; desc: string }[] = [
-  { value: 'original', label: 'Original', desc: 'No change' },
-  { value: 'single', label: 'Single', desc: 'Default column' },
-  { value: 'double', label: 'Double', desc: 'Two-column grid' },
-  { value: 'triple', label: 'Triple', desc: 'Three-column grid' },
-]
+const props = defineProps<{
+  lang: 'zh' | 'en'
+}>()
+
+const options = computed(() => [
+  { value: 'original' as const, label: props.lang === 'zh' ? '原生' : 'Original', desc: props.lang === 'zh' ? '保持原生布局' : 'No change' },
+  { value: 'single' as const, label: props.lang === 'zh' ? '单栏' : 'Single', desc: props.lang === 'zh' ? '单栏卡片居中' : 'Default column' },
+  { value: 'double' as const, label: props.lang === 'zh' ? '双栏' : 'Double', desc: props.lang === 'zh' ? '双栏卡片并排' : 'Two-column grid' },
+])
 </script>
 
 <template>
   <div class="layout-card">
-    <span class="layout-label">Layout Mode</span>
+    <span class="layout-label">{{ lang === 'zh' ? '布局模式' : 'Layout Mode' }}</span>
     <div class="layout-options">
       <button
         v-for="opt in options"
@@ -25,7 +29,7 @@ const options: { value: LayoutMode; label: string; desc: string }[] = [
         <div class="layout-preview" :class="`preview-${opt.value}`">
           <div
             class="preview-bar"
-            v-for="i in (opt.value === 'triple' ? 3 : opt.value === 'double' ? 2 : opt.value === 'single' ? 1 : 0)"
+            v-for="i in (opt.value === 'double' ? 2 : opt.value === 'single' ? 1 : 0)"
             :key="i"
           >
             <span class="preview-line" v-for="j in 2" :key="j" />
@@ -72,12 +76,12 @@ const options: { value: LayoutMode; label: string; desc: string }[] = [
   background: #fff;
 }
 .layout-option.active {
-  border-color: #bac8ff;
-  background: #f0f4ff;
-  box-shadow: 0 1px 4px rgba(92, 124, 250, 0.12);
+  border-color: #bae6fd;
+  background: #f0f9ff;
+  box-shadow: 0 1px 4px rgba(2, 132, 199, 0.12);
 }
 .layout-option.active .option-label {
-  color: #5c7cfa;
+  color: #0284c7;
 }
 
 /* Layout preview bars */

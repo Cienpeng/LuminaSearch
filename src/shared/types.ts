@@ -2,7 +2,7 @@ export type EngineName = 'baidu' | 'google' | 'bing'
 
 export type LayoutMode = 'original' | 'single' | 'double' | 'triple'
 
-export type DarkModeSetting = 'auto' | 'on' | 'off'
+export type LanguageSetting = 'zh' | 'en'
 
 export interface EyeProtectionConfig {
   enabled: boolean
@@ -21,7 +21,7 @@ export interface EngineConfig {
 }
 
 export interface GlobalConfig {
-  darkMode: DarkModeSetting
+  lang: LanguageSetting
 }
 
 export interface AppConfig {

@@ -3,6 +3,12 @@ const enabled = defineModel<boolean>('enabled', { required: true })
 const color = defineModel<string>('color', { required: true })
 const opacity = defineModel<number>('opacity', { required: true })
 
+defineProps<{
+  label: string
+  description?: string
+  opacityLabel?: string
+}>()
+
 const presetColors = ['#c8e6c9', '#fff9c4', '#f8bbd0', '#bbdefb', '#e1bee7', '#d7ccc8']
 </script>
 
@@ -10,8 +16,8 @@ const presetColors = ['#c8e6c9', '#fff9c4', '#f8bbd0', '#bbdefb', '#e1bee7', '#d
   <div class="eye-card" :class="{ disabled: !enabled }">
     <div class="eye-header">
       <div class="eye-info">
-        <span class="eye-label">Eye Protection</span>
-        <p class="eye-desc">Soft background tint overlay</p>
+        <span class="eye-label">{{ label }}</span>
+        <p v-if="description" class="eye-desc">{{ description }}</p>
       </div>
       <el-switch v-model="enabled" size="small" />
     </div>
@@ -31,7 +37,7 @@ const presetColors = ['#c8e6c9', '#fff9c4', '#f8bbd0', '#bbdefb', '#e1bee7', '#d
         </div>
       </div>
       <div class="opacity-row">
-        <span class="opacity-label">Opacity</span>
+        <span class="opacity-label">{{ opacityLabel || 'Opacity' }}</span>
         <el-slider v-model="opacity" :min="0.05" :max="0.4" :step="0.05" size="small" class="opacity-slider" />
         <span class="opacity-value">{{ Math.round(opacity * 100) }}%</span>
       </div>
@@ -99,7 +105,7 @@ const presetColors = ['#c8e6c9', '#fff9c4', '#f8bbd0', '#bbdefb', '#e1bee7', '#d
   transform: scale(1.12);
 }
 .preset-dot.active {
-  border-color: #5c7cfa;
+  border-color: #0284c7;
   transform: scale(1.12);
 }
 
@@ -112,7 +118,7 @@ const presetColors = ['#c8e6c9', '#fff9c4', '#f8bbd0', '#bbdefb', '#e1bee7', '#d
 .opacity-label {
   font-size: 11px;
   color: #94a3b8;
-  width: 42px;
+  width: 50px;
   flex-shrink: 0;
 }
 .opacity-slider {
@@ -137,7 +143,7 @@ const presetColors = ['#c8e6c9', '#fff9c4', '#f8bbd0', '#bbdefb', '#e1bee7', '#d
 
 /* Slider global overrides */
 .eye-card .el-slider {
-  --el-slider-main-bg-color: #5c7cfa;
+  --el-slider-main-bg-color: #0284c7;
   --el-slider-runway-bg-color: #eef1f5;
 }
 .eye-card .el-slider .el-slider__runway {
@@ -151,7 +157,7 @@ const presetColors = ['#c8e6c9', '#fff9c4', '#f8bbd0', '#bbdefb', '#e1bee7', '#d
 .eye-card .el-slider .el-slider__button {
   width: 14px;
   height: 14px;
-  border-color: #5c7cfa;
-  box-shadow: 0 1px 3px rgba(92, 124, 250, 0.3);
+  border-color: #0284c7;
+  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.3);
 }
 </style>
