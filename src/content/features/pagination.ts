@@ -80,7 +80,7 @@ async function loadNextPage(
 
     loader.remove()
 
-    const oldNav = document.querySelector('nav[role="navigation"]')
+    const oldNav = contentArea.querySelector('nav[role="navigation"]')
     oldNav?.remove()
 
     return newItems

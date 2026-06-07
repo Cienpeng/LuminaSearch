@@ -90,16 +90,17 @@ const BING_SINGLE_CSS = `
 #b_topw .b_title a,
 #b_results h2 a,
 #b_results .b_title a {
-  color: #1a0dab !important;
+  color: #0c8ef1 !important;
 }
 #b_topw h2 a:visited,
 #b_topw .b_title a:visited,
 #b_results h2 a:visited,
 #b_results .b_title a:visited {
-  color: #681da8 !important;
+  color: #7a1ccc !important;
 }
-#b_topw strong,
-#b_results strong {
+#b_content strong,
+#b_content b,
+#b_content em {
   color: #c5221f !important;
 }
 
@@ -154,6 +155,251 @@ const BING_SINGLE_CSS = `
   margin-left: auto !important;
   margin-right: auto !important;
 }
+
+/* === Center Bing's b_pole (Overview / tabs) === */
+#b_pole {
+  display: block !important;
+  width: var(--searchbeauti-bing-list-width) !important;
+  max-width: var(--searchbeauti-bing-list-width) !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box !important;
+}
+#b_pole .b_poleContent {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box !important;
+}
+body:not(:has(.pole-mag)) #b_pole .wptabs_cont {
+  margin-left: 0 !important;
+}
+`
+
+const GOOGLE_SINGLE_CSS = `
+:root {
+  --searchbeauti-google-list-width: min(972px, calc(100vw - 48px));
+}
+
+/* === Center the search results === */
+#rcnt {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+#center_col {
+  width: var(--searchbeauti-google-list-width) !important;
+  max-width: var(--searchbeauti-google-list-width) !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* === Handle sidebar positioning === */
+#rhs {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  width: var(--searchbeauti-google-list-width) !important;
+  max-width: var(--searchbeauti-google-list-width) !important;
+}
+
+/* === Center and shorten Google Search Box === */
+#searchform {
+  min-height: 70px !important;
+  position: relative !important;
+}
+form.tsf {
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: min(580px, calc(100vw - 48px)) !important;
+  max-width: min(580px, calc(100vw - 48px)) !important;
+  margin: 0 !important;
+  z-index: 1001 !important;
+}
+.Q3DXx.Efnghe {
+  position: absolute !important;
+  right: 24px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  left: auto !important;
+}
+
+/* === Center Google Navigation Tabs === */
+.YNk70c.iFBYke {
+  display: block !important;
+}
+.GG4mbd {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+.HTOhZ {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  width: var(--searchbeauti-google-list-width) !important;
+  max-width: var(--searchbeauti-google-list-width) !important;
+}
+
+/* === Card styling for Google results === */
+#rso .MjjYud {
+  background: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid #e8eaed !important;
+  padding: 16px 20px !important;
+  margin-bottom: 12px !important;
+  transition: box-shadow 0.15s, border-color 0.15s !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+#rso .MjjYud:hover {
+  box-shadow: 0 4px 16px rgba(92, 124, 250, 0.18) !important;
+  border-color: #bac8ff !important;
+}
+
+/* === Restore Google result text states (Blue titles, Purple visited, Red keywords) === */
+#center_col h3,
+#center_col h3 * {
+  color: #0c8ef1 !important;
+}
+#center_col a:visited h3,
+#center_col a:visited h3 * {
+  color: #7a1ccc !important;
+}
+#center_col em {
+  color: #c5221f !important;
+}
+`
+
+const BAIDU_SINGLE_CSS = `
+:root {
+  --searchbeauti-baidu-list-width: min(972px, calc(100vw - 48px));
+}
+
+/* === Center the search results container === */
+#container {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  width: var(--searchbeauti-baidu-list-width) !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+#content_left {
+  width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin: 0 auto !important;
+  float: none !important;
+}
+
+/* === Hide sidebar in single layout mode === */
+#content_right {
+  display: none !important;
+}
+
+/* === Center and shorten Baidu Search Box === */
+.s_form {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+#result_logo,
+.result_logo {
+  position: absolute !important;
+  left: 24px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+}
+.chat-input-anchor {
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin-left: 0 !important;
+  width: min(580px, calc(100vw - 48px)) !important;
+  max-width: min(580px, calc(100vw - 48px)) !important;
+}
+#form,
+.fm {
+  float: none !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  width: min(580px, calc(100vw - 48px)) !important;
+  max-width: min(580px, calc(100vw - 48px)) !important;
+}
+#chat-input-main {
+  position: relative !important;
+  left: 0 !important;
+  transform: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+.chat-input-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* === Center Baidu Navigation Tabs === */
+.s_tab {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  width: var(--searchbeauti-baidu-list-width) !important;
+  padding-left: 0 !important;
+}
+#s_tab_inner,
+.s_tab_inner {
+  display: flex !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  justify-content: center !important;
+  width: 100% !important;
+}
+
+/* === Center pagination === */
+.page_2muyV, #page {
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+/* === Card styling for Baidu results === */
+#content_left .result,
+#content_left .c-container {
+  background: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid #e8eaed !important;
+  padding: 16px 20px !important;
+  margin-bottom: 12px !important;
+  transition: box-shadow 0.15s, border-color 0.15s !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+#content_left .result:hover,
+#content_left .c-container:hover {
+  box-shadow: 0 4px 16px rgba(92, 124, 250, 0.18) !important;
+  border-color: #bac8ff !important;
+}
+
+/* === Restore Baidu result text states (Blue titles, Purple visited, Red keywords) === */
+#content_left h3 a,
+#content_left h3 a * {
+  color: #0c8ef1 !important;
+}
+#content_left h3 a:visited,
+#content_left h3 a:visited * {
+  color: #7a1ccc !important;
+}
+#content_left em {
+  color: #c5221f !important;
+}
 `
 
 function getCSS(engine: string, mode: LayoutMode): string {
@@ -161,7 +407,10 @@ function getCSS(engine: string, mode: LayoutMode): string {
     switch (engine) {
       case 'bing':
         return BING_SINGLE_CSS
-      // Baidu and Google layouts to be implemented
+      case 'google':
+        return GOOGLE_SINGLE_CSS
+      case 'baidu':
+        return BAIDU_SINGLE_CSS
       default:
         return ''
     }
