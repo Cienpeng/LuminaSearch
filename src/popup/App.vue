@@ -11,10 +11,10 @@ function getIconUrl(key: EngineName): string {
   return chrome.runtime.getURL(engineIcons[key])
 }
 
-const logoUrl = chrome.runtime.getURL('public/icons/logo.svg')
+const logoUrl = chrome.runtime.getURL('icons/logo.svg')
 
 const config = reactive<AppConfig>({
-  global: { lang: 'zh' },
+  global: { lang: 'en' },
   engines: {
     baidu: { ...defaultEngineConfig },
     google: { ...defaultEngineConfig },

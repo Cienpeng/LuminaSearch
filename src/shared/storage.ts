@@ -1,7 +1,7 @@
 import type { AppConfig } from './types'
 import { defaultConfig } from './defaults'
 
-const STORAGE_KEY = 'searchbeauti_config'
+const STORAGE_KEY = 'luminasearch_config'
 
 export async function loadConfig(): Promise<AppConfig> {
   const result = await chrome.storage.sync.get(STORAGE_KEY)

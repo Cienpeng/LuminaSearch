@@ -5,6 +5,89 @@ const STYLE_ID = 'luminasearch-layout'
 let currentMode: LayoutMode = 'original'
 let currentAdapter: EngineAdapter | null = null
 
+const BING_BASE_CSS = `
+/* === LuminaSearch Bing Base Header Adjustments === */
+#sb_form {
+  display: flex !important;
+  align-items: center !important;
+}
+#est_switch {
+  position: static !important;
+  top: auto !important;
+  height: auto !important;
+  margin-left: 0 !important;
+  margin-right: 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+}
+#est_switch_keepH {
+  display: none !important;
+}
+#est_cn, #est_en {
+  display: inline-block !important;
+  padding: 5px 14px !important;
+  margin: 0 3px !important;
+  border-radius: 16px !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0.3px !important;
+  box-sizing: border-box !important;
+}
+#est_cn.est_selected, #est_en.est_selected {
+  background: linear-gradient(135deg, #FEF3E2 0%, #FDE8C8 100%) !important;
+  color: #B45309 !important;
+  border: 1px solid #F8C387 !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 3px rgba(217, 119, 6, 0.15), 0 0 0 1px rgba(248, 195, 135, 0.3) !important;
+}
+#est_cn.est_selected:hover, #est_en.est_selected:hover {
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.2), 0 0 0 1px rgba(248, 195, 135, 0.4) !important;
+}
+#est_cn.est_unselected, #est_en.est_unselected {
+  background: #ffffff !important;
+  color: #64748b !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+#est_cn.est_unselected:hover, #est_en.est_unselected:hover {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06) !important;
+}
+.b_searchboxForm {
+  display: inline-flex !important;
+  align-items: center !important;
+  align-self: center !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+.b_logoArea {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  flex-shrink: 0 !important;
+  margin-right: 12px !important;
+}
+body.b_pinhead .b_scopebar,
+body.b_pinhead #est_switch,
+body.b_pinhead #b_pole {
+  display: none !important;
+}
+body.b_pinhead #b_header {
+  height: 56px !important;
+  padding-top: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+body.b_pinhead #sb_search {
+  display: inline-block !important;
+}
+`
+
 const BING_SINGLE_CSS = `
 :root {
   --luminasearch-bing-list-width: min(972px, calc(100vw - 48px));
@@ -172,8 +255,10 @@ body.sb-scrolling * {
 
 /* === Center the search box and scope bar — same width as cards === */
 #sb_form {
-  display: block !important;
   width: var(--luminasearch-bing-list-width) !important;
+  margin: 0 auto !important;
+}
+body.b_pinhead #sb_form {
   margin: 0 auto !important;
 }
 .b_searchboxForm {
@@ -699,8 +784,10 @@ body.sb-scrolling * {
 
 /* === Center the search box and scope bar === */
 #sb_form {
-  display: block !important;
   width: min(972px, calc(100vw - 48px)) !important;
+  margin: 0 auto !important;
+}
+body.b_pinhead #sb_form {
   margin: 0 auto !important;
 }
 .b_searchboxForm {
@@ -1231,30 +1318,37 @@ body.sb-double-layout #content_left .c-container.expanded::after {
 `
 
 function getCSS(engine: string, mode: LayoutMode): string {
+  let css = ''
+  if (engine === 'bing' && mode !== 'original') {
+    css += BING_BASE_CSS
+  }
+
   if (mode === 'single') {
     switch (engine) {
       case 'bing':
-        return BING_SINGLE_CSS
+        css += BING_SINGLE_CSS
+        break
       case 'google':
-        return GOOGLE_SINGLE_CSS
+        css += GOOGLE_SINGLE_CSS
+        break
       case 'baidu':
-        return BAIDU_SINGLE_CSS
-      default:
-        return ''
+        css += BAIDU_SINGLE_CSS
+        break
     }
   } else if (mode === 'double') {
     switch (engine) {
       case 'bing':
-        return BING_DOUBLE_CSS
+        css += BING_DOUBLE_CSS
+        break
       case 'google':
-        return GOOGLE_DOUBLE_CSS
+        css += GOOGLE_DOUBLE_CSS
+        break
       case 'baidu':
-        return BAIDU_DOUBLE_CSS
-      default:
-        return ''
+        css += BAIDU_DOUBLE_CSS
+        break
     }
   }
-  return ''
+  return css
 }
 
 let doubleLayoutObserver: MutationObserver | null = null
@@ -1414,6 +1508,47 @@ function remove() {
   currentMode = 'original'
 }
 
+function alignBingSwitcher() {
+  const form = document.getElementById('sb_form')
+  const est = document.getElementById('est_switch')
+  if (form && est) {
+    if (est.parentElement !== form) {
+      form.insertBefore(est, form.firstChild)
+    }
+  } else {
+    // If elements are not loaded yet, wait for them
+    const observer = new MutationObserver((_, obs) => {
+      const f = document.getElementById('sb_form')
+      const e = document.getElementById('est_switch')
+      if (f && e) {
+        if (e.parentElement !== f) {
+          f.insertBefore(e, f.firstChild)
+        }
+        obs.disconnect()
+      }
+    })
+    observer.observe(document.documentElement, { childList: true, subtree: true })
+    
+    // Also use DOMContentLoaded fallback
+    window.addEventListener('DOMContentLoaded', () => {
+      const f = document.getElementById('sb_form')
+      const e = document.getElementById('est_switch')
+      if (f && e && e.parentElement !== f) {
+        f.insertBefore(e, f.firstChild)
+      }
+      observer.disconnect()
+    }, { once: true })
+  }
+}
+
+function restoreBingSwitcher() {
+  const header = document.getElementById('b_header')
+  const est = document.getElementById('est_switch')
+  if (header && est && est.parentElement !== header) {
+    header.appendChild(est)
+  }
+}
+
 export const layoutFeature: Feature = {
   name: 'layout',
 
@@ -1426,13 +1561,21 @@ export const layoutFeature: Feature = {
         document.documentElement.classList.add('sb-double-layout')
         startDoubleLayoutWatcher(adapter)
       }
+      if (adapter.name === 'bing') {
+        alignBingSwitcher()
+      }
     }
   },
 
   onConfigChange(config: AppConfig) {
     if (!currentAdapter) return
     const mode = config.engines[currentAdapter.name].layout
-    if (mode === currentMode) return
+    if (mode === currentMode) {
+      if (currentAdapter.name === 'bing' && mode !== 'original') {
+        alignBingSwitcher()
+      }
+      return
+    }
 
     // Cleanup double layout specific states
     document.documentElement.classList.remove('sb-double-layout')
@@ -1441,16 +1584,25 @@ export const layoutFeature: Feature = {
 
     if (mode === 'original') {
       remove()
+      if (currentAdapter.name === 'bing') {
+        restoreBingSwitcher()
+      }
     } else {
       inject(currentAdapter.name, mode)
       if (mode === 'double') {
         document.documentElement.classList.add('sb-double-layout')
         startDoubleLayoutWatcher(currentAdapter)
       }
+      if (currentAdapter.name === 'bing') {
+        alignBingSwitcher()
+      }
     }
   },
 
   destroy() {
+    if (currentAdapter && currentAdapter.name === 'bing') {
+      restoreBingSwitcher()
+    }
     currentAdapter = null
     document.documentElement.classList.remove('sb-double-layout')
     stopDoubleLayoutWatcher()

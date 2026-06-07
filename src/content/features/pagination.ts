@@ -200,7 +200,7 @@ function startDomWatcher(adapter: EngineAdapter) {
   }
 
   const contentArea = document.querySelector(adapter.selectors.pageContent)
-  const watchTarget = contentArea ?? document.body
+  const watchTarget = contentArea ?? document.body ?? document.documentElement
 
   state.domWatcher = new MutationObserver(() => {
     if (domWatcherTimer !== null) {

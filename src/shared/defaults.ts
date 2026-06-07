@@ -1,14 +1,14 @@
 import type { AppConfig, EngineConfig, GlobalConfig } from './types'
 
 export const defaultGlobalConfig: GlobalConfig = {
-  lang: 'zh',
+  lang: 'en',
 }
 
 export const defaultEngineConfig: EngineConfig = {
   enabled: true,
   layout: 'original',
-  favicon: true,
-  autoPagination: true,
+  favicon: false,
+  autoPagination: false,
   eyeProtection: {
     enabled: false,
     color: '#c8e6c9',
