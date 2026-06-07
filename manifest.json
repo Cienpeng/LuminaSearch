@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "LuminaSearch",
   "version": "1.0.0",
-  "description": "Beautify Baidu, Google, and Bing search results — grid layouts, favicons, infinite pagination, and eye protection.",
+  "description": "Optimize Baidu, Google, and Bing search results — grid layouts, favicons, infinite pagination, and eye protection.",
   "icons": {
     "16": "public/icons/icon-16.png",
     "48": "public/icons/icon-48.png",
