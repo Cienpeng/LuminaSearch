@@ -39,7 +39,7 @@ function addFavicon(item: HTMLElement, domain: string, insertSelector: string) {
   const img = document.createElement('img')
   img.className = FAVICON_CLASS
   img.setAttribute('data-luminasearch', 'favicon')
-  img.src = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=32`
+  img.src = `https://faviconsnap.com/api/favicon?url=${encodeURIComponent(domain)}`
   img.width = 16
   img.height = 16
   img.style.cssText = 'margin-right:6px;vertical-align:middle;border-radius:2px;flex-shrink:0;'
