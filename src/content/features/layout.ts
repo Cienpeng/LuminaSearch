@@ -16,6 +16,9 @@ const BING_BASE_CSS = `
   padding: 0 24px !important;
   box-sizing: border-box !important;
 }
+.sa_as {
+  flex-wrap: nowrap !important;
+}
 #sb_form {
   display: flex !important;
   align-items: center !important;
