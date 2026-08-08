@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue'
-import { loadConfig, saveConfig } from '../shared/storage'
-import { engineLabels, engineIcons, defaultEngineConfig } from '../shared/defaults'
+import { ref, reactive, watch, onMounted, toRaw } from 'vue'
+import {
+  CONFIG_UPDATED_MESSAGE,
+  loadConfig,
+  saveConfig,
+} from '../shared/storage'
+import { engineLabels, engineIcons, createDefaultConfig } from '../shared/defaults'
 import type { AppConfig, EngineName, EngineConfig, LayoutMode } from '../shared/types'
 import ToggleCard from './components/ToggleCard.vue'
 import LayoutPicker from './components/LayoutPicker.vue'
 import EyeProtectCard from './components/EyeProtectCard.vue'
+import RangeCard from './components/RangeCard.vue'
 
 function getIconUrl(key: EngineName): string {
   return chrome.runtime.getURL(engineIcons[key])
@@ -13,14 +18,7 @@ function getIconUrl(key: EngineName): string {
 
 const logoUrl = chrome.runtime.getURL('icons/logo.svg')
 
-const config = reactive<AppConfig>({
-  global: { lang: 'en' },
-  engines: {
-    baidu: { ...defaultEngineConfig },
-    google: { ...defaultEngineConfig },
-    bing: { ...defaultEngineConfig },
-  },
-})
+const config = reactive<AppConfig>(createDefaultConfig())
 
 const activeEngine = ref<EngineName>('baidu')
 const loaded = ref(false)
@@ -42,12 +40,15 @@ const translations = {
     langDesc: '切换当前设置面板的显示语言',
     enableOn: '启用 {engine} 优化',
     enableOnDesc: '在此搜索引擎上应用所有美化和优化功能',
+    fontSize: '结果字体大小',
+    fontSizeDesc: '调整搜索结果卡片标题和摘要的字号',
     favicon: '显示 Favicon 图标',
     faviconDesc: '在搜索结果标题旁显示对应的网站图标',
     autoPagination: '自动无缝翻页',
     autoPaginationDesc: '滚动到底部时自动加载下一页搜索结果',
     eyeProtection: '温和护眼模式',
     eyeProtectionDesc: '为整个页面添加一层舒适背景护眼色',
+    colorAlpha: '颜色透明度',
     eyeOpacity: '护眼深度',
     hideSidebar: '隐藏推广侧边栏',
     hideSidebarDesc: '移除右侧的侧边栏推荐面板以聚焦内容',
@@ -62,12 +63,15 @@ const translations = {
     langDesc: 'Toggle current settings panel language',
     enableOn: 'Enable on {engine}',
     enableOnDesc: 'Apply enhancements to this search engine',
+    fontSize: 'Result font size',
+    fontSizeDesc: 'Adjust title and summary text in result cards',
     favicon: 'Show Favicon',
     faviconDesc: 'Show website icons next to result titles',
     autoPagination: 'Auto Pagination',
     autoPaginationDesc: 'Auto-load next page on scroll',
     eyeProtection: 'Eye Protection Overlay',
     eyeProtectionDesc: 'Tint page background with protective color',
+    colorAlpha: 'Color alpha',
     eyeOpacity: 'Opacity',
     hideSidebar: 'Hide Sidebar Column',
     hideSidebarDesc: 'Remove the sidebar panel on results pages',
@@ -109,15 +113,59 @@ async function detectEngine() {
   }
 }
 
-watch(
-  config,
-  () => {
-    if (loaded.value) {
-      saveConfig(JSON.parse(JSON.stringify(config)))
-    }
-  },
-  { deep: true, immediate: false },
-)
+let saveTimer: number | null = null
+let saveChain: Promise<void> = Promise.resolve()
+
+async function notifyActiveTab(snapshot: AppConfig) {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    if (!tab.id) return
+    await chrome.tabs.sendMessage(tab.id, {
+      type: CONFIG_UPDATED_MESSAGE,
+      config: snapshot,
+    })
+  } catch {
+    // The storage change listener remains the fallback when the tab has no content script.
+  }
+}
+
+function persistConfig(): Promise<void> {
+  const snapshot = structuredClone(toRaw(config))
+  saveChain = saveChain
+    .catch(() => undefined)
+    .then(async () => {
+      await saveConfig(snapshot)
+      await notifyActiveTab(snapshot)
+    })
+    .catch((error) => {
+      console.error('[LuminaSearch] Failed to save configuration:', error)
+    })
+  return saveChain
+}
+
+function flushSave() {
+  if (saveTimer === null) return
+  clearTimeout(saveTimer)
+  saveTimer = null
+  void persistConfig()
+}
+
+function queueSave() {
+  if (saveTimer !== null) {
+    clearTimeout(saveTimer)
+  }
+
+  saveTimer = window.setTimeout(() => {
+    saveTimer = null
+    void persistConfig()
+  }, 150)
+}
+
+watch(config, () => {
+  if (loaded.value) queueSave()
+}, { deep: true, immediate: false })
+
+window.addEventListener('pagehide', flushSave)
 
 const currentEngine = reactive({
   get config(): EngineConfig {
@@ -183,6 +231,16 @@ const currentEngine = reactive({
 
           <LayoutPicker :lang="config.global.lang" v-model="currentEngine.config.layout" />
 
+          <RangeCard
+            :label="t('fontSize')"
+            :description="t('fontSizeDesc')"
+            v-model="currentEngine.config.fontSize"
+            :min="12"
+            :max="20"
+            :step="1"
+            unit="px"
+          />
+
           <ToggleCard
             :label="t('favicon')"
             :description="t('faviconDesc')"
@@ -198,6 +256,7 @@ const currentEngine = reactive({
           <EyeProtectCard
             :label="t('eyeProtection')"
             :description="t('eyeProtectionDesc')"
+            :colorAlphaLabel="t('colorAlpha')"
             :opacityLabel="t('eyeOpacity')"
             v-model:enabled="currentEngine.config.eyeProtection.enabled"
             v-model:color="currentEngine.config.eyeProtection.color"

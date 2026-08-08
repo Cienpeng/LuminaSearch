@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import NativeSwitch from './NativeSwitch.vue'
+
 const model = defineModel<boolean>({ required: true })
 
 defineProps<{
@@ -13,7 +15,7 @@ defineProps<{
       <span class="toggle-label">{{ label }}</span>
       <p v-if="description" class="toggle-desc">{{ description }}</p>
     </div>
-    <el-switch v-model="model" size="small" />
+    <NativeSwitch v-model="model" :label="label" />
   </label>
 </template>
 
@@ -47,26 +49,5 @@ defineProps<{
   font-size: 11px;
   color: #94a3b8;
   margin: 2px 0 0;
-}
-</style>
-
-<style>
-/* El-Switch global overrides */
-.el-switch {
-  --el-switch-on-color: #F8C387;
-  --el-switch-off-color: #d1d5db;
-}
-.el-switch.is-checked .el-switch__core {
-  background-color: #F8C387;
-  border-color: #F8C387;
-}
-.el-switch .el-switch__core {
-  border-radius: 12px;
-  height: 22px;
-  min-width: 40px;
-}
-.el-switch .el-switch__core .el-switch__action {
-  width: 16px;
-  height: 16px;
 }
 </style>

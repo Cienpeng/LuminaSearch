@@ -2,6 +2,9 @@
 node_modules
 dist
 docs
+/tests
+!/tests/
+!/tests/**/*.test.ts
 !README.md
 !README_zh.md
 !README_en.md

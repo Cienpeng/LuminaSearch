@@ -7,6 +7,7 @@ export const defaultGlobalConfig: GlobalConfig = {
 export const defaultEngineConfig: EngineConfig = {
   enabled: true,
   layout: 'original',
+  fontSize: 16,
   favicon: false,
   autoPagination: false,
   eyeProtection: {
@@ -16,6 +17,13 @@ export const defaultEngineConfig: EngineConfig = {
   },
   hideSidebar: false,
   backgroundOptimize: true,
+}
+
+export function createDefaultEngineConfig(): EngineConfig {
+  return {
+    ...defaultEngineConfig,
+    eyeProtection: { ...defaultEngineConfig.eyeProtection },
+  }
 }
 
 export const engineLabels: Record<string, string> = {
@@ -30,11 +38,15 @@ export const engineIcons: Record<string, string> = {
   bing: 'icons/Bing.svg',
 }
 
-export const defaultConfig: AppConfig = {
-  global: { ...defaultGlobalConfig },
-  engines: {
-    baidu: { ...defaultEngineConfig },
-    google: { ...defaultEngineConfig },
-    bing: { ...defaultEngineConfig },
-  },
+export function createDefaultConfig(): AppConfig {
+  return {
+    global: { ...defaultGlobalConfig },
+    engines: {
+      baidu: createDefaultEngineConfig(),
+      google: createDefaultEngineConfig(),
+      bing: createDefaultEngineConfig(),
+    },
+  }
 }
+
+export const defaultConfig: AppConfig = createDefaultConfig()

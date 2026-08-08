@@ -10,6 +10,8 @@ interface PaginationState {
   nextUrl: string | null
   observer: IntersectionObserver | null
   domWatcher: MutationObserver | null
+  abortController: AbortController | null
+  requestId: number
 }
 
 const state: PaginationState = {
@@ -18,6 +20,8 @@ const state: PaginationState = {
   nextUrl: null,
   observer: null,
   domWatcher: null,
+  abortController: null,
+  requestId: 0,
 }
 
 let currentAdapter: EngineAdapter | null = null
@@ -56,13 +60,19 @@ async function loadNextPage(
   if (state.loading || !state.nextUrl) return []
 
   state.loading = true
+  const requestId = ++state.requestId
+  const nextUrl = state.nextUrl
+  const abortController = new AbortController()
+  state.abortController = abortController
 
   const loader = createLoader()
   contentArea.appendChild(loader)
 
   try {
-    const resp = await fetch(state.nextUrl)
+    const resp = await fetch(nextUrl, { signal: abortController.signal })
     const html = await resp.text()
+    if (requestId !== state.requestId) return []
+
     const parser = new DOMParser()
     const doc = parser.parseFromString(html, 'text/html')
 
@@ -76,6 +86,8 @@ async function loadNextPage(
       return []
     }
 
+    adapter.prepareImportedResults?.(newItems, nextUrl, doc)
+
     state.currentPage++
     state.nextUrl = findNextUrlInDoc(doc, adapter.selectors.nextPageLink)
 
@@ -83,10 +95,14 @@ async function loadNextPage(
 
     return newItems
   } catch {
+    if (requestId !== state.requestId) return []
     loader.textContent = 'Failed to load more results'
     return []
   } finally {
-    state.loading = false
+    if (requestId === state.requestId) {
+      state.loading = false
+      state.abortController = null
+    }
   }
 }
 
@@ -107,9 +123,9 @@ function setupScrollObserver(adapter: EngineAdapter, contentArea: Element) {
         if (newItems.length > 0) {
           const area = document.querySelector(adapter.selectors.pageContent)
           if (area) {
-            for (const item of newItems) {
-              area.appendChild(item)
-            }
+            const fragment = document.createDocumentFragment()
+            fragment.append(...newItems)
+            area.appendChild(fragment)
           }
           onResultsAdded?.(newItems)
           setupScrollObserver(adapter, contentArea)
@@ -188,12 +204,21 @@ function tryInit(adapter: EngineAdapter) {
 }
 
 let domWatcherTimer: number | null = null
+let domWatcherStopTimer: number | null = null
+
+function clearDomWatcherStopTimer() {
+  if (domWatcherStopTimer !== null) {
+    clearTimeout(domWatcherStopTimer)
+    domWatcherStopTimer = null
+  }
+}
 
 function startDomWatcher(adapter: EngineAdapter) {
   if (state.domWatcher) {
     state.domWatcher.disconnect()
     state.domWatcher = null
   }
+  clearDomWatcherStopTimer()
   if (domWatcherTimer !== null) {
     clearTimeout(domWatcherTimer)
     domWatcherTimer = null
@@ -212,6 +237,7 @@ function startDomWatcher(adapter: EngineAdapter) {
       if (result) {
         state.domWatcher?.disconnect()
         state.domWatcher = null
+        clearDomWatcherStopTimer()
       }
     }, 100)
   })
@@ -221,7 +247,8 @@ function startDomWatcher(adapter: EngineAdapter) {
     subtree: true,
   })
 
-  setTimeout(() => {
+  domWatcherStopTimer = window.setTimeout(() => {
+    domWatcherStopTimer = null
     if (state.domWatcher) {
       state.domWatcher.disconnect()
       state.domWatcher = null
@@ -234,6 +261,11 @@ function startDomWatcher(adapter: EngineAdapter) {
 }
 
 function cleanup() {
+  state.abortController?.abort()
+  state.abortController = null
+  state.requestId++
+  state.loading = false
+
   if (state.observer) {
     state.observer.disconnect()
     state.observer = null
@@ -242,6 +274,7 @@ function cleanup() {
     state.domWatcher.disconnect()
     state.domWatcher = null
   }
+  clearDomWatcherStopTimer()
   if (domWatcherTimer !== null) {
     clearTimeout(domWatcherTimer)
     domWatcherTimer = null
@@ -276,7 +309,9 @@ export const paginationFeature: Feature = {
       cleanup()
     } else if (!state.observer && !state.domWatcher) {
       // Was off, now on — re-init
-      tryInit(currentAdapter)
+      if (!tryInit(currentAdapter)) {
+        startDomWatcher(currentAdapter)
+      }
     }
   },
 

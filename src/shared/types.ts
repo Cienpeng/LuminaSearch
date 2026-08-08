@@ -1,5 +1,7 @@
 export type EngineName = 'baidu' | 'google' | 'bing'
 
+export type ResultLayoutKind = 'standard' | 'full-width' | 'ignore'
+
 export type LayoutMode = 'original' | 'single' | 'double' | 'triple'
 
 export type LanguageSetting = 'zh' | 'en'
@@ -13,6 +15,7 @@ export interface EyeProtectionConfig {
 export interface EngineConfig {
   enabled: boolean
   layout: LayoutMode
+  fontSize: number
   favicon: boolean
   autoPagination: boolean
   eyeProtection: EyeProtectionConfig
@@ -35,6 +38,7 @@ export interface EngineAdapter {
   isSearchPage: (url: string) => boolean
   selectors: {
     resultItem: string
+    standardResultItem?: string
     resultLink: string
     resultTitle: string
     resultSnippet: string
@@ -43,6 +47,12 @@ export interface EngineAdapter {
     pageContent: string
     sidebar: string
   }
+  classifyResult?: (result: Element) => ResultLayoutKind
+  prepareImportedResults?: (
+    results: HTMLElement[],
+    responseUrl: string,
+    sourceDocument: Document,
+  ) => void
 }
 
 export interface Feature {

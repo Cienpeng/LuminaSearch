@@ -1,5 +1,12 @@
 import type { AppConfig, EngineAdapter, Feature } from '../shared/types'
-import { loadConfig, onConfigChanged } from '../shared/storage'
+import {
+  CONFIG_UPDATED_MESSAGE,
+  getConfigFingerprint,
+  loadConfig,
+  mergeConfig,
+  onConfigChanged,
+} from '../shared/storage'
+import { defaultConfig } from '../shared/defaults'
 import { bingAdapter } from './engines/bing'
 import { baiduAdapter } from './engines/baidu'
 import { googleAdapter } from './engines/google'
@@ -7,7 +14,8 @@ import { eyeProtectFeature } from './features/eye-protect'
 import { faviconFeature } from './features/favicon'
 import { paginationFeature, setOnResultsAdded } from './features/pagination'
 import { hideSidebarFeature } from './features/hide-sidebar'
-import { layoutFeature } from './features/layout'
+import { layoutFeature, updateGoogleCompactHeaderForScroll } from './features/layout'
+import { fontSizeFeature } from './features/font-size'
 
 // Synchronously inject anti-flash styles at document_start to prevent FOOC
 const antiFlash = document.createElement('style')
@@ -27,11 +35,13 @@ const features: Feature[] = [
   paginationFeature,
   hideSidebarFeature,
   layoutFeature,
+  fontSizeFeature,
 ]
 
 let activeFeatures: Feature[] = []
 let currentConfig: AppConfig | null = null
 let currentAdapter: EngineAdapter | null = null
+let currentConfigFingerprint = ''
 
 let lastProcessedUrl = ''
 let isInitializing = false
@@ -43,6 +53,47 @@ function matchAdapter(): EngineAdapter | null {
 
 function getEngineConfig(config: AppConfig, adapter: EngineAdapter) {
   return config.engines[adapter.name]
+}
+
+function applyConfig(newConfig: AppConfig) {
+  const nextFingerprint = getConfigFingerprint(newConfig)
+  if (nextFingerprint === currentConfigFingerprint) return
+
+  const previousConfig = currentConfig
+  currentConfig = newConfig
+  currentConfigFingerprint = nextFingerprint
+  if (!currentAdapter) return
+
+  const wasEnabled = previousConfig
+    ? getEngineConfig(previousConfig, currentAdapter).enabled
+    : false
+  const nowEnabled = getEngineConfig(newConfig, currentAdapter).enabled
+  if (!wasEnabled && nowEnabled) {
+    void initFeatures(newConfig, currentAdapter).catch((err) => {
+      console.error('[LuminaSearch] Error enabling features:', err)
+    })
+  } else if (wasEnabled && !nowEnabled) {
+    destroyFeatures()
+  } else if (nowEnabled) {
+    for (const f of activeFeatures) {
+      f.onConfigChange?.(newConfig)
+    }
+  }
+}
+
+function isConfigUpdateMessage(
+  message: unknown,
+): message is { type: string; config: unknown } {
+  if (!message || typeof message !== 'object') return false
+  const record = message as Record<string, unknown>
+  return record.type === CONFIG_UPDATED_MESSAGE && record.config !== undefined
+}
+
+function setupConfigMessageListener() {
+  chrome.runtime.onMessage.addListener((message) => {
+    if (!isConfigUpdateMessage(message)) return
+    applyConfig(mergeConfig(defaultConfig, message.config))
+  })
 }
 
 async function initFeatures(config: AppConfig, adapter: EngineAdapter) {
@@ -92,10 +143,12 @@ async function performInit(url: string) {
       }
     })
 
-    // Load configuration fresh to ensure correct layout options are applied
-    currentConfig = await loadConfig()
-
-    await initFeatures(currentConfig, adapter)
+    // The initial configuration is loaded before the first init. Reusing it
+    // avoids a second storage round-trip on every page load and URL change.
+    const config = currentConfig ?? await loadConfig()
+    currentConfig = config
+    currentConfigFingerprint = getConfigFingerprint(config)
+    await initFeatures(config, adapter)
   } finally {
     // Always remove anti-flash styles to restore page visibility
     document.getElementById('luminasearch-anti-flash')?.remove()
@@ -145,6 +198,10 @@ function checkStyleTags() {
     }
   }
 
+  if (!document.getElementById('luminasearch-font-size')) {
+    styleMissing = true
+  }
+
 
 
   // Check eye protect stylesheet
@@ -187,42 +244,73 @@ function setupUrlChangeListener() {
   window.addEventListener('popstate', scheduleChecks)
   window.addEventListener('hashchange', scheduleChecks)
 
-  // Observe all DOM mutations under documentElement (remains active through SPA head/body replacements)
-  const observer = new MutationObserver((mutations) => {
-    let shouldCheck = location.href !== lastProcessedUrl
-    if (!shouldCheck) {
-      for (let k = 0; k < mutations.length; k++) {
-        const m = mutations[k]
-        if (m.target.nodeName === 'TITLE') {
-          shouldCheck = true
-          break
+  // History API navigation does not emit popstate, so notify explicitly.
+  const originalPushState = history.pushState.bind(history)
+  const originalReplaceState = history.replaceState.bind(history)
+  history.pushState = (...args) => {
+    const result = originalPushState(...args)
+    scheduleChecks()
+    return result
+  }
+  history.replaceState = (...args) => {
+    const result = originalReplaceState(...args)
+    scheduleChecks()
+    return result
+  }
+
+  // Only observe the head for stylesheet/title changes. Observing the whole
+  // document subtree made every search-result DOM mutation run this callback.
+  let headObserver: MutationObserver | null = null
+  const attachHeadObserver = () => {
+    headObserver?.disconnect()
+    const head = document.head
+    if (!head) return
+
+    headObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'characterData') {
+          if (mutation.target.parentElement?.closest('title')) {
+            scheduleChecks()
+            return
+          }
+          continue
         }
-        for (let i = 0; i < m.addedNodes.length; i++) {
-          const node = m.addedNodes[i]
-          if (node.nodeName === 'STYLE' || node.nodeName === 'LINK') {
-            shouldCheck = true
-            break
+
+        for (const node of mutation.addedNodes) {
+          if (node.nodeName === 'STYLE' || node.nodeName === 'LINK' || node.nodeName === 'TITLE') {
+            scheduleChecks()
+            return
           }
         }
-        if (shouldCheck) break
-        for (let i = 0; i < m.removedNodes.length; i++) {
-          const node = m.removedNodes[i]
-          if (node.nodeName === 'STYLE' || node.nodeName === 'LINK') {
-            shouldCheck = true
-            break
+        for (const node of mutation.removedNodes) {
+          if (node.nodeName === 'STYLE' || node.nodeName === 'LINK' || node.nodeName === 'TITLE') {
+            scheduleChecks()
+            return
           }
         }
-        if (shouldCheck) break
+      }
+    })
+    headObserver.observe(head, { childList: true, subtree: true, characterData: true })
+  }
+
+  attachHeadObserver()
+
+  // Reattach if an SPA replaces the head. This observer watches only direct
+  // documentElement children rather than every mutation in the page.
+  const rootObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.target !== document.documentElement) continue
+      const headChanged = [...mutation.addedNodes, ...mutation.removedNodes].some(
+        (node) => node.nodeName === 'HEAD',
+      )
+      if (headChanged) {
+        attachHeadObserver()
+        scheduleChecks()
+        return
       }
     }
-    if (shouldCheck) {
-      scheduleChecks()
-    }
   })
-  observer.observe(document.documentElement, { childList: true, subtree: true })
-
-  // Fallback periodic check (every 1 second) in case observers are delayed
-  setInterval(scheduleChecks, 1000)
+  rootObserver.observe(document.documentElement, { childList: true })
 }
 
 let scrollTimeout: number | null = null
@@ -233,6 +321,7 @@ function setupScrollListener() {
     if (!document.body.classList.contains('sb-scrolling')) {
       document.body.classList.add('sb-scrolling')
     }
+    updateGoogleCompactHeaderForScroll(window.scrollY)
     if (scrollTimeout !== null) {
       clearTimeout(scrollTimeout)
     }
@@ -244,8 +333,11 @@ function setupScrollListener() {
 }
 
 async function main() {
+  setupConfigMessageListener()
+
   // Load initial config
   currentConfig = await loadConfig()
+  currentConfigFingerprint = getConfigFingerprint(currentConfig)
 
   // Initialize features for the first page load
   await triggerReinit()
@@ -255,21 +347,7 @@ async function main() {
   setupScrollListener()
 
   // Listen for config changes from popup
-  onConfigChanged((newConfig: AppConfig) => {
-    currentConfig = newConfig
-    for (const f of features) {
-      f.onConfigChange?.(newConfig)
-    }
-
-    if (!currentAdapter) return
-    const wasEnabled = getEngineConfig(currentConfig, currentAdapter).enabled
-    const nowEnabled = getEngineConfig(newConfig, currentAdapter).enabled
-    if (!wasEnabled && nowEnabled) {
-      initFeatures(newConfig, currentAdapter)
-    } else if (wasEnabled && !nowEnabled) {
-      destroyFeatures()
-    }
-  })
+  onConfigChanged(applyConfig)
 }
 
 // Start immediately (at document_start)

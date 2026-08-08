@@ -31,7 +31,9 @@ export const hideSidebarFeature: Feature = {
   onConfigChange(config: AppConfig) {
     if (!currentAdapter) return
     if (config.engines[currentAdapter.name].hideSidebar) {
-      inject(currentAdapter)
+      if (!document.getElementById(STYLE_ID)) {
+        inject(currentAdapter)
+      }
     } else {
       remove()
     }

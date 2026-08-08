@@ -5,6 +5,9 @@ import manifest from './manifest.json'
 
 export default defineConfig({
   base: './',
+  build: {
+    modulePreload: false,
+  },
   plugins: [
     vue(),
     crx({ manifest }),

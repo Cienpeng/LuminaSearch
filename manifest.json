@@ -4,17 +4,17 @@
   "version": "1.0.0",
   "description": "Optimize Baidu, Google, and Bing search results — grid layouts, favicons, infinite pagination, and eye protection.",
   "icons": {
-    "16": "public/icons/icon-16.png",
-    "48": "public/icons/icon-48.png",
-    "128": "public/icons/icon-128.png"
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
   },
   "action": {
     "default_popup": "src/popup/index.html",
     "default_title": "LuminaSearch",
     "default_icon": {
-      "16": "public/icons/icon-16.png",
-      "48": "public/icons/icon-48.png",
-      "128": "public/icons/icon-128.png"
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
     }
   },
   "content_scripts": [
@@ -30,10 +30,6 @@
       "run_at": "document_start"
     }
   ],
-  "background": {
-    "service_worker": "src/background.ts",
-    "type": "module"
-  },
   "permissions": ["storage", "tabs"],
   "host_permissions": [
     "*://www.baidu.com/*",

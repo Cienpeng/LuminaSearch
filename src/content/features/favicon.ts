@@ -42,6 +42,9 @@ function addFavicon(item: HTMLElement, domain: string, insertSelector: string) {
   img.src = `https://faviconsnap.com/api/favicon?url=${encodeURIComponent(domain)}`
   img.width = 16
   img.height = 16
+  img.loading = 'lazy'
+  img.decoding = 'async'
+  img.referrerPolicy = 'no-referrer'
   img.style.cssText = 'margin-right:6px;vertical-align:middle;border-radius:2px;flex-shrink:0;'
   img.onerror = () => { img.style.display = 'none' }
   anchor.style.verticalAlign = 'middle'
@@ -50,6 +53,7 @@ function addFavicon(item: HTMLElement, domain: string, insertSelector: string) {
 
 function processItems(items: HTMLElement[], adapter: EngineAdapter) {
   for (const item of items) {
+    if (adapter.classifyResult && adapter.classifyResult(item) !== 'standard') continue
     const domain = getDomain(item, adapter.selectors.faviconAnchor)
     addFavicon(item, domain, adapter.selectors.resultLink)
   }
@@ -68,10 +72,55 @@ function isLuminaSearchNode(node: Node): boolean {
   return false
 }
 
+function isOwnAddedNode(node: Node): boolean {
+  return node.nodeType === 1 && isLuminaSearchNode(node)
+}
+
 let domWatcher: MutationObserver | null = null
 let debounceTimer: number | null = null
 
-function startDomWatcher(config: AppConfig, adapter: EngineAdapter) {
+function collectResultItems(
+  node: Node,
+  selector: string,
+  items: Set<HTMLElement>,
+) {
+  if (node.nodeType !== 1) return
+  const element = node as HTMLElement
+
+  if (element.matches(selector)) {
+    items.add(element)
+  }
+  element.querySelectorAll<HTMLElement>(selector).forEach((item) => items.add(item))
+
+  // A lazy-loaded child can change an already existing result card.
+  const parentItem = element.closest<HTMLElement>(selector)
+  if (parentItem) items.add(parentItem)
+}
+
+function collectAddedResultItems(
+  mutations: MutationRecord[],
+  selector: string,
+): Set<HTMLElement> {
+  const items = new Set<HTMLElement>()
+  for (const mutation of mutations) {
+    const onlyOwnAddedNodes = mutation.addedNodes.length > 0
+      && [...mutation.addedNodes].every(isOwnAddedNode)
+    if ((!onlyOwnAddedNodes || mutation.removedNodes.length > 0)
+      && mutation.target.nodeType === 1) {
+      const parentItem = (mutation.target as Element).closest<HTMLElement>(selector)
+      if (parentItem) items.add(parentItem)
+    }
+
+    for (const node of mutation.addedNodes) {
+      if (!isLuminaSearchNode(node)) {
+        collectResultItems(node, selector, items)
+      }
+    }
+  }
+  return items
+}
+
+function startDomWatcher(adapter: EngineAdapter) {
   if (domWatcher) {
     domWatcher.disconnect()
     domWatcher = null
@@ -81,31 +130,28 @@ function startDomWatcher(config: AppConfig, adapter: EngineAdapter) {
     debounceTimer = null
   }
 
+  let pendingItems = new Set<HTMLElement>()
+
   domWatcher = new MutationObserver((mutations) => {
-    let hasAddedNodes = false
-    for (let i = 0; i < mutations.length; i++) {
-      const addedNodes = mutations[i].addedNodes
-      for (let j = 0; j < addedNodes.length; j++) {
-        if (!isLuminaSearchNode(addedNodes[j])) {
-          hasAddedNodes = true
-          break
-        }
-      }
-      if (hasAddedNodes) break
-    }
-    if (!hasAddedNodes) return
+    const addedItems = collectAddedResultItems(mutations, adapter.selectors.resultItem)
+    if (addedItems.size === 0) return
+
+    for (const item of addedItems) pendingItems.add(item)
 
     if (debounceTimer !== null) {
       clearTimeout(debounceTimer)
     }
     debounceTimer = window.setTimeout(() => {
       debounceTimer = null
-      const items = Array.from(document.querySelectorAll<HTMLElement>(adapter.selectors.resultItem))
+      const items = [...pendingItems]
+      pendingItems = new Set<HTMLElement>()
       processItems(items, adapter)
     }, 100)
   })
 
-  const target = document.querySelector(adapter.selectors.pageContent) || document.body
+  const target = document.querySelector(adapter.selectors.pageContent)
+    || document.body
+    || document.documentElement
   domWatcher.observe(target, {
     childList: true,
     subtree: true,
@@ -123,7 +169,7 @@ export const faviconFeature: Feature = {
     const items = Array.from(document.querySelectorAll<HTMLElement>(adapter.selectors.resultItem))
     processItems(items, adapter)
 
-    startDomWatcher(config, adapter)
+    startDomWatcher(adapter)
   },
 
   processResults(results: HTMLElement[], adapter: EngineAdapter) {
@@ -134,11 +180,13 @@ export const faviconFeature: Feature = {
     if (!currentAdapter) return
     const ec = config.engines[currentAdapter.name]
     if (ec.favicon) {
-      const items = Array.from(
-        document.querySelectorAll<HTMLElement>(currentAdapter.selectors.resultItem),
-      )
-      processItems(items, currentAdapter)
-      startDomWatcher(config, currentAdapter)
+      if (!domWatcher) {
+        const items = Array.from(
+          document.querySelectorAll<HTMLElement>(currentAdapter.selectors.resultItem),
+        )
+        processItems(items, currentAdapter)
+        startDomWatcher(currentAdapter)
+      }
     } else {
       if (domWatcher) {
         domWatcher.disconnect()
