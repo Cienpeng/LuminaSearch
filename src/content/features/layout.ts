@@ -852,6 +852,38 @@ img.luminasearch-favicon {
 }
 `
 
+const BAIDU_SEARCH_INPUT_CSS = `
+/* === Keep Baidu's async suggestion panel aligned with the viewport input === */
+.chat-input-anchor {
+  left: 50vw !important;
+}
+#chat-input-main,
+.chat-input-wrapper,
+#chat-input-panel,
+#chat-input-panel > .ai-bdsug.ai-bdsug-new,
+#chat-input-panel > .ai-bdsug.ai-bdsug-new > ul,
+#chat-input-panel > .ai-bdsug.ai-bdsug-new > ul > li {
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+#chat-input-main .chat-input-wrapper #chat-input-panel:not(.panel-shrink) {
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: min(100vh, calc(100vh - 70px)) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+#chat-input-main .chat-input-wrapper #chat-input-panel:not(.panel-shrink) > .ai-bdsug.ai-bdsug-new,
+#chat-input-main .chat-input-wrapper #chat-input-panel:not(.panel-shrink) > .ai-bdsug.ai-bdsug-new > ul {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+#chat-input-main .chat-input-wrapper #chat-input-panel:not(.panel-shrink) > .ai-bdsug.ai-bdsug-new > ul > li {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+`
+
 const BAIDU_SINGLE_CSS = `
 :root {
   --luminasearch-baidu-list-width: min(972px, calc(100vw - 48px));
@@ -902,7 +934,7 @@ body.sb-scrolling * {
 }
 .chat-input-anchor {
   position: absolute !important;
-  left: 50% !important;
+  left: 50vw !important;
   transform: translateX(-50%) !important;
   margin-left: 0 !important;
   width: min(580px, calc(100vw - 48px)) !important;
@@ -927,6 +959,8 @@ body.sb-scrolling * {
   width: 100% !important;
   max-width: 100% !important;
 }
+
+${BAIDU_SEARCH_INPUT_CSS}
 
 /* === Center Baidu Navigation Tabs === */
 .s_tab {
@@ -1498,7 +1532,7 @@ body.sb-scrolling * {
 }
 .chat-input-anchor {
   position: absolute !important;
-  left: 50% !important;
+  left: 50vw !important;
   transform: translateX(-50%) !important;
   margin-left: 0 !important;
   width: min(580px, calc(100vw - 48px)) !important;
@@ -1523,6 +1557,8 @@ body.sb-scrolling * {
   width: 100% !important;
   max-width: 100% !important;
 }
+
+${BAIDU_SEARCH_INPUT_CSS}
 
 /* === Center Baidu Navigation Tabs === */
 .s_tab {
