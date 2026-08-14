@@ -2,10 +2,17 @@ import type { EngineAdapter, ResultLayoutKind } from '../../shared/types'
 
 export interface GoogleResultSignals {
   isDirectChild: boolean
+<<<<<<< HEAD
   isRichWrapper: boolean
   hasLink: boolean
   hasTitle: boolean
   hasSnippet: boolean
+=======
+  isOrganicResult: boolean
+  isRichWrapper: boolean
+  hasLink: boolean
+  hasTitle: boolean
+>>>>>>> develop
   hasOrganicVideoBody: boolean
   hasKnowledgePanel: boolean
   hasTextAd: boolean
@@ -18,7 +25,11 @@ export function classifyGoogleResultSignals(
   if (
     signals.isRichWrapper
     || !signals.hasTitle
+<<<<<<< HEAD
     || (!signals.hasSnippet && !signals.hasOrganicVideoBody)
+=======
+    || (!signals.isOrganicResult && !signals.hasOrganicVideoBody)
+>>>>>>> develop
     || signals.hasKnowledgePanel
     || signals.hasTextAd
   ) return 'full-width'
@@ -28,10 +39,17 @@ export function classifyGoogleResultSignals(
 export function classifyGoogleResult(result: Element): ResultLayoutKind {
   return classifyGoogleResultSignals({
     isDirectChild: result.parentElement?.id === 'rso',
+<<<<<<< HEAD
     isRichWrapper: result.classList.contains('ULSxyf'),
     hasLink: Boolean(result.querySelector('a')),
     hasTitle: Boolean(result.querySelector('h3')),
     hasSnippet: Boolean(result.querySelector('.VwiC3b')),
+=======
+    isOrganicResult: result.matches(GOOGLE_ORGANIC_RESULT_SELECTOR),
+    isRichWrapper: result.classList.contains('ULSxyf'),
+    hasLink: Boolean(result.querySelector('a')),
+    hasTitle: Boolean(result.querySelector('h3')),
+>>>>>>> develop
     hasOrganicVideoBody: Boolean(result.querySelector('.iHxmLe .ITZIwc')),
     hasKnowledgePanel: Boolean(result.querySelector('.kp-blk')),
     hasTextAd: result.hasAttribute('data-text-ad')
@@ -44,9 +62,22 @@ export const GOOGLE_RESULT_ITEM_SELECTOR = [
   '#rso > .ULSxyf:has(a)',
 ].join(', ')
 
+<<<<<<< HEAD
 export const GOOGLE_STANDARD_RESULT_SELECTOR = [
   '#rso > .MjjYud:has(h3)',
   ':is(:has(.VwiC3b), :has(.iHxmLe .ITZIwc))',
+=======
+/**
+ * Google keeps ordinary results in an A6K0A result slot, then wraps the
+ * rendered result body in a wHYlTd element. The title is the semantic anchor
+ * that survives snippet-less, media, and hydrated result variants.
+ */
+export const GOOGLE_ORGANIC_RESULT_SELECTOR =
+  '#rso > .MjjYud:has(> .A6K0A .wHYlTd h3)'
+
+export const GOOGLE_STANDARD_RESULT_SELECTOR = [
+  GOOGLE_ORGANIC_RESULT_SELECTOR,
+>>>>>>> develop
   ':not(:has(.kp-blk))',
   ':not([data-text-ad])',
   ':not(:has([data-text-ad]))',
@@ -54,8 +85,12 @@ export const GOOGLE_STANDARD_RESULT_SELECTOR = [
 
 export const GOOGLE_FULL_WIDTH_RESULT_SELECTOR = [
   '#rso > .ULSxyf',
+<<<<<<< HEAD
   '#rso > .MjjYud:not(:has(h3))',
   '#rso > .MjjYud:not(:has(.VwiC3b)):not(:has(.iHxmLe .ITZIwc))',
+=======
+  `#rso > .MjjYud:not(:has(> .A6K0A .wHYlTd h3))`,
+>>>>>>> develop
   '#rso > .MjjYud:has(.kp-blk)',
   '#rso > .MjjYud[data-text-ad]',
   '#rso > .MjjYud:has([data-text-ad])',
@@ -63,6 +98,7 @@ export const GOOGLE_FULL_WIDTH_RESULT_SELECTOR = [
 
 export const GOOGLE_AI_OVERVIEW_SELECTOR = '#rso > .ULSxyf:has(.SePcAf .h7Tj7e)'
 
+<<<<<<< HEAD
 const GOOGLE_PLACEHOLDER_GIF = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='
 const GOOGLE_IMPORTED_MEDIA_SELECTOR = [
   '.kb0PBd.LnCrMe .uhHOwf img[data-deferred]',
@@ -70,6 +106,35 @@ const GOOGLE_IMPORTED_MEDIA_SELECTOR = [
   '.ULSxyf img[data-src]',
 ].join(', ')
 
+=======
+export const GOOGLE_PLACEHOLDER_GIF = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='
+const GOOGLE_MEDIA_PROCESSED_ATTRIBUTE = 'data-luminasearch-google-media-processed'
+export const GOOGLE_IMPORTED_MEDIA_SELECTOR = [
+  '.uhHOwf img[data-deferred], .uhHOwf img[data-src], .uhHOwf img[data-srcset], .uhHOwf img[data-lazy-src]',
+  '.uhHOwf source[data-src], .uhHOwf source[data-srcset], .uhHOwf video[data-src], .uhHOwf video[data-poster]',
+  '.kb0PBd.LnCrMe .uhHOwf img[data-deferred]',
+  '.iHxmLe .uhHOwf.BYbUcd img[data-deferred]',
+  '.ULSxyf img[data-src], .ULSxyf img[data-srcset], .ULSxyf source[data-srcset]',
+].join(', ')
+
+export function isGooglePlaceholderMediaSource(source: string | null | undefined): boolean {
+  return !source || source.trim() === GOOGLE_PLACEHOLDER_GIF
+}
+
+interface GoogleMediaLoadState {
+  currentSrc: string | null
+  src: string | null
+  complete: boolean
+  naturalWidth: number
+}
+
+export function shouldRestoreGoogleImportedMedia(state: GoogleMediaLoadState): boolean {
+  return isGooglePlaceholderMediaSource(state.currentSrc || state.src)
+    || !state.complete
+    || state.naturalWidth === 0
+}
+
+>>>>>>> develop
 function decodeGoogleScriptString(value: string): string {
   return value.replace(/\\(x[0-9a-f]{2}|u[0-9a-f]{4}|[\\'"nrtbfv])/gi, (match, escape) => {
     if (escape[0].toLowerCase() === 'x') {
@@ -137,6 +202,25 @@ export function normalizeGoogleImportedMediaSource(
   return url.href
 }
 
+<<<<<<< HEAD
+=======
+export function normalizeGoogleImportedMediaSrcset(
+  source: string | null | undefined,
+  responseUrl: string,
+): string | null {
+  if (!source?.trim()) return null
+
+  const candidates = source.split(',').map((candidate) => {
+    const match = candidate.trim().match(/^(\S+)(\s+.*)?$/)
+    if (!match) return null
+    const url = normalizeGoogleImportedMediaSource(match[1], responseUrl, true)
+    return url ? `${url}${match[2] ?? ''}` : null
+  }).filter((candidate): candidate is string => Boolean(candidate))
+
+  return candidates.length > 0 ? candidates.join(', ') : null
+}
+
+>>>>>>> develop
 interface GoogleMediaCandidate {
   dataSrc: string | null
   videoUrl: string | null
@@ -152,6 +236,113 @@ export function chooseGoogleImportedMediaSource(
     ?? normalizeGoogleImportedMediaSource(candidate.videoUrl, responseUrl)
 }
 
+<<<<<<< HEAD
+=======
+function getGoogleMediaDataSource(element: Element): string | null {
+  return element.getAttribute('data-src')
+    ?? element.getAttribute('data-lazy-src')
+    ?? element.getAttribute('data-original')
+    ?? element.getAttribute('data-iurl')
+    ?? element.getAttribute('data-url')
+}
+
+function getGoogleMediaVideoSource(element: Element): string | null {
+  return element.closest('.AZJdrc')
+    ?.querySelector<HTMLElement>('.VYkpsb[data-url]')
+    ?.getAttribute('data-url') ?? null
+}
+
+function markGoogleMediaProcessed(element: Element) {
+  element.setAttribute(GOOGLE_MEDIA_PROCESSED_ATTRIBUTE, '1')
+}
+
+function activateGoogleMediaElement(
+  element: Element,
+  responseUrl: string,
+  hydrationSources: Map<string, string>,
+) {
+  if (element.getAttribute(GOOGLE_MEDIA_PROCESSED_ATTRIBUTE) === '1') return
+
+  const hydratedSource = element.id ? hydrationSources.get(element.id) ?? null : null
+  const dataSrc = getGoogleMediaDataSource(element)
+  const srcset = normalizeGoogleImportedMediaSrcset(
+    element.getAttribute('data-srcset'),
+    responseUrl,
+  )
+  const isImage = element instanceof HTMLImageElement
+  const isSource = element instanceof HTMLSourceElement
+  const isVideo = element instanceof HTMLVideoElement
+
+  if (isSource) {
+    if (srcset) element.setAttribute('srcset', srcset)
+    const source = chooseGoogleImportedMediaSource({
+      dataSrc,
+      videoUrl: getGoogleMediaVideoSource(element),
+      hydratedSource,
+    }, responseUrl)
+    if (source) element.setAttribute('src', source)
+    markGoogleMediaProcessed(element)
+    return
+  }
+
+  if (isVideo) {
+    const source = chooseGoogleImportedMediaSource({
+      dataSrc,
+      videoUrl: getGoogleMediaVideoSource(element),
+      hydratedSource,
+    }, responseUrl)
+    if (source && (!element.getAttribute('poster') || element.getAttribute('data-poster'))) {
+      element.setAttribute('poster', source)
+    }
+    markGoogleMediaProcessed(element)
+    return
+  }
+
+  if (!isImage) {
+    markGoogleMediaProcessed(element)
+    return
+  }
+
+  const imageState = {
+    currentSrc: element.currentSrc,
+    src: element.getAttribute('src'),
+    complete: element.complete,
+    naturalWidth: element.naturalWidth,
+  }
+  if (!srcset && !shouldRestoreGoogleImportedMedia(imageState)) {
+    markGoogleMediaProcessed(element)
+    return
+  }
+
+  if (srcset) element.setAttribute('srcset', srcset)
+
+  const source = chooseGoogleImportedMediaSource({
+    dataSrc,
+    videoUrl: getGoogleMediaVideoSource(element),
+    hydratedSource,
+  }, responseUrl)
+  if (!source) {
+    markGoogleMediaProcessed(element)
+    return
+  }
+
+  const fallback = element.cloneNode(true) as HTMLImageElement
+  fallback.setAttribute(GOOGLE_MEDIA_PROCESSED_ATTRIBUTE, '1')
+  const handleLoad = () => element.removeEventListener('error', handleError)
+  const handleError = () => {
+    element.removeEventListener('load', handleLoad)
+    element.replaceWith(fallback)
+  }
+  element.addEventListener('load', handleLoad, { once: true })
+  element.addEventListener('error', handleError, { once: true })
+  element.decoding = 'async'
+  if (!element.getAttribute('loading')) element.loading = 'lazy'
+  element.setAttribute('data-deferred', '2')
+  element.setAttribute('src', source)
+  markGoogleMediaProcessed(element)
+}
+
+>>>>>>> develop
 function activateGoogleImportedMedia(
   results: HTMLElement[],
   responseUrl: string,
@@ -162,6 +353,7 @@ function activateGoogleImportedMedia(
   )
 
   for (const result of results) {
+<<<<<<< HEAD
     const images = result.querySelectorAll<HTMLImageElement>(GOOGLE_IMPORTED_MEDIA_SELECTOR)
     for (const image of images) {
       const source = chooseGoogleImportedMediaSource({
@@ -184,6 +376,11 @@ function activateGoogleImportedMedia(
       image.decoding = 'async'
       image.setAttribute('data-deferred', '2')
       image.src = source
+=======
+    const media = result.querySelectorAll(GOOGLE_IMPORTED_MEDIA_SELECTOR)
+    for (const element of media) {
+      activateGoogleMediaElement(element, responseUrl, hydrationSources)
+>>>>>>> develop
     }
   }
 }
